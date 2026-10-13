@@ -104,3 +104,14 @@ Star the repo, report bugs, pick a `good first issue`, or send a small focused P
 
 **30. How do I report a security issue?**
 Privately: Security → Advisories → Report a vulnerability, or message the maintainer. Never as a public issue. Details in `SECURITY.md`.
+
+## Troubleshooting
+
+**31. Console shows "Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute" — is that a bug?**
+It is a Chromium performance advisory, and it is already handled: every canvas context the app creates (page, thumbnail, export, image-to-PDF, blank-page detector) and every scratch canvas pdf.js allocates (soft-mask groups, tiling patterns, image decode, glyph probing) request `willReadFrequently`, so the warning does not appear and readback-heavy pages render faster. If you still see it after updating, reload the extension and confirm `vendor/` is complete.
+
+**32. Blank pages render slowly, or thumbnails look grey.**
+Reload the extension first (vendor files or the worker may be stale). Then check Settings → High quality (DPR 2) and Settings → Text layer (off = fastest on huge files). Thumbnails are lazily rendered as you scroll the sidebar — grey placeholders fill in on demand.
+
+**33. Pages with transparent images or soft masks used to render slowly.**
+They now render through readback-optimized canvases, which removes the GPU round-trip per soft-mask compose. Expect a visible improvement on image-heavy PDFs.

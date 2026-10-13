@@ -16,6 +16,15 @@ All notable changes to this project are documented here. Format follows
   Rotate, Edit, Bookmark, Night mode and all status-bar quick actions stay
   reachable (compact rows + scrollable action row, compact annotate bar)
 
+### Fixed
+- Canvas2D readback warning ("Multiple readback operations using getImageData
+  are faster with the willReadFrequently attribute"): every context the app and
+  pdf.js scratch canvases use now requests `willReadFrequently`, via ours
+  (page, thumbnail, export, image-to-PDF, blank detector) and a custom
+  `canvasFactory` passed through `getDocument()` (soft-mask groups, tiling
+  patterns, image decode, glyph probing). Pages with soft masks render faster
+  and the console stays clean.
+
 ### Removed
 - Read-aloud sound button: speaker button, menu entry and Hub card removed
   (page text copy/share stays); TTS engine code left dormant with no UI entry

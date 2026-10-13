@@ -1131,7 +1131,7 @@ Current numbers (kept in sync by hand; small repo by design):
 | Edit ops engine | ~910 lines (`nevaipdf-ops.js`) |
 | Background worker | ~110 lines |
 | Documentation | 6 pages + this README (~1,400 lines) |
-| Diagrams in README | 22 (all reproducible on any Markdown viewer; gallery in `docs/DIAGRAMS.md`) |
+| Diagrams in README | 23 (all reproducible on any Markdown viewer; gallery in `docs/DIAGRAMS.md`) |
 | Features shipped | 100+ (see `docs/FEATURES.md`) |
 | Permissions requested | 3 (`contextMenus`, `webNavigation`, `storage`) |
 | Vendored dependencies | pdf.js, pdf-lib, qpdf.wasm, cmaps |
@@ -1268,7 +1268,7 @@ Please follow the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ---
 
-## FAQ — 35 Questions
+## FAQ — 36 Questions
 
 1. **Is it really free?** Yes. MIT-licensed, unlimited, no watermark, no account.
 2. **Do my PDFs upload anywhere?** No. Everything runs locally via `blob:` URLs.
@@ -1305,6 +1305,7 @@ Please follow the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 33. **Is there telemetry or crash reporting?** None. No network calls of any kind exist in the app code.
 34. **How do I report an upstream pdf.js bug?** Fixes land as vendor updates: report upstream, then link the issue here.
 35. **What licence do the docs use?** They ship with the repository under MIT, same as the code.
+36. **Console shows "Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute" — is that a bug?** It is a Chromium performance advisory, already handled: every context the app creates (page, thumbnail, export, image-to-PDF, blank detector) and every scratch canvas pdf.js allocates (soft-mask groups, tiling patterns, image decode, glyph probing) request `willReadFrequently`, so the warning does not appear and readback-heavy pages render faster. Still seeing it? Reload the extension and confirm `vendor/` is complete.
 
 More help: [`SUPPORT.md`](./SUPPORT.md). Install help: [`docs/INSTALLATION.md`](./docs/INSTALLATION.md). Manual: [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md). Diagrams gallery: [`docs/DIAGRAMS.md`](./docs/DIAGRAMS.md). Roadmap: [`docs/ROADMAP.md`](./docs/ROADMAP.md). Long-form FAQ: [`docs/FAQ.md`](./docs/FAQ.md). API reference: [`docs/API.md`](./docs/API.md). Testing: [`docs/TESTING.md`](./docs/TESTING.md).
 

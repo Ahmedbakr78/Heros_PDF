@@ -451,6 +451,49 @@ if (!pdfjsLib) {
 }
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
 
+/* Canvas factory for pdf.js internals.
+   pdf.js allocates its own scratch canvases (image decode, soft-mask groups,
+   tiling patterns, glyph probing) and reads pixels back from them. Chromium
+   warns "Multiple readback operations ... willReadFrequently" and is slower
+   unless the hint is set, so every context we hand to pdf.js carries it.
+   This is public API: getDocument({ canvasFactory }). */
+function makeCanvasFactory() {
+  try {
+    const Base = pdfjsLib.DefaultCanvasFactory;
+    if (!Base || !Base.prototype) return null;
+    const proto = Object.create(Base.prototype);
+    proto.create = function (width, height) {
+      if (width <= 0 || height <= 0) throw new Error('Invalid canvas size');
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      return { canvas: canvas, context: canvas.getContext('2d', { willReadFrequently: true }) };
+    };
+    proto.reset = function (canvasAndContext, width, height) {
+      if (!canvasAndContext || !canvasAndContext.canvas) throw new Error('Canvas is not specified');
+      if (width <= 0 || height <= 0) throw new Error('Invalid canvas size');
+      canvasAndContext.canvas.width = width;
+      canvasAndContext.canvas.height = height;
+    };
+    function Factory() { Base.call(this); }
+    Factory.prototype = proto;
+    return new Factory();
+  } catch (e) {
+    console.warn('[HerosPDF] canvas factory fallback', e);
+    return null;
+  }
+}
+const canvasFactory = makeCanvasFactory();
+if (canvasFactory && typeof pdfjsLib.getDocument === 'function') {
+  const _getDocument = pdfjsLib.getDocument.bind(pdfjsLib);
+  pdfjsLib.getDocument = function (params) {
+    if (params === null || typeof params !== 'object' || Array.isArray(params) || params.canvasFactory) {
+      return _getDocument(params);
+    }
+    return _getDocument(Object.assign({}, params, { canvasFactory: canvasFactory }));
+  };
+}
+
 /* --------------------------------------------------------------------------
    10. Document loading
    -------------------------------------------------------------------------- */
@@ -920,7 +963,10 @@ async function renderPage(pv) {
     canvas.style.width = Math.floor(viewport.width) + 'px';
     canvas.style.height = Math.floor(viewport.height) + 'px';
 
-    const ctx = canvas.getContext('2d', { alpha: false });
+    // willReadFrequently: pdf.js reads back from this context when a page
+    // uses soft masks (genericComposeSMask) — the hint avoids Chromium's
+    // "Multiple readback operations" warning and the slow GPU round-trip.
+    const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -1355,7 +1401,7 @@ async function renderThumb(el) {
     c.height = Math.floor(vp.height * dpr);
     c.style.width = '100%';
     c.style.height = 'auto';
-    const ctx = c.getContext('2d', { alpha: false });
+    const ctx = c.getContext('2d', { alpha: false, willReadFrequently: true });
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, c.width, c.height);
     await page.render({
@@ -2921,7 +2967,7 @@ function renderAnnotPng(pv, k) {
       const c = document.createElement('canvas');
       c.width = Math.floor(vp.width);
       c.height = Math.floor(vp.height);
-      const ctx = c.getContext('2d');
+      const ctx = c.getContext('2d', { willReadFrequently: true });
       if (!ctx) { resolve(null); return; }
       // transparent background — only the marks
       drawStrokesExport(ctx, vp, strokes);
@@ -5621,7 +5667,7 @@ async function nevaiImageBytesToPng(file) {
     const c = document.createElement('canvas');
     c.width = bmp.width;
     c.height = bmp.height;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { willReadFrequently: true });
     if (!ctx) { bmp.close(); return null; }
     ctx.drawImage(bmp, 0, 0);
     bmp.close();
