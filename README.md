@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/icon.png" alt="Heros PDF app icon" width="120">
+<img src="assets/icons/logo.png" alt="Heros app icon" width="140">
 
 # Heros PDF — PDF Studio Extension
 
