@@ -33,6 +33,14 @@
 ## Free Power
 - [x] No account · [x] No watermark · [x] No daily quota · [x] Unlimited pages/merges/annots · [x] MIT open source
 
+## Productivity Studio (new — all auto-saved locally, unlimited, free)
+- [x] Stopwatch with Start/Pause/Lap/Reset, 200-lap history, keeps running across reload
+- [x] Counters: unlimited named counters, custom step, rename, reset, delete
+- [x] Reading tracker: automatic per-file + per-day time, day streak, adjustable daily goal with progress bar
+- [x] Todo: file-scoped + global tasks, Active/Done filter, clear-done, TXT export
+- [x] Tools backup/restore/reset as one JSON file, included in full backup v4
+- [x] Opens via Tools tab, Tools menu entry, or the T shortcut
+
 ## Roadmap (unchecked = planned)
 - [ ] Form filling + signature pad (v2.4)
 - [ ] OCR for scanned PDFs, local wasm (v2.5)

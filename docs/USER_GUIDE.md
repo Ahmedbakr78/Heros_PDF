@@ -93,5 +93,28 @@ Open Sidebar → Edit. All ops are pure `Uint8Array → Uint8Array` via `window.
 ## 11. Keyboard map (complete)
 
 Open, Search, Arrows, Home/End, +/-/0, Ctrl+B (sidebar), Ctrl+Z / Ctrl+Shift+Z (annot undo/redo),
-Delete (edit selection), F (fit width), R (rotate), Space / Shift+Space (scroll), F11 (fullscreen),
+Delete (edit selection), F (fit width), R (rotate), T (productivity tools),
+Space / Shift+Space (scroll), F11 (fullscreen),
 Ctrl+P (print), Esc (close modal/menu, exit presentation).
+
+## 12. Productivity studio (Tools tab)
+
+Open it from the sidebar Tools tab, the main menu (Tools section), or by pressing T.
+Everything saves automatically to the device (localStorage key `pdfstudio-tools-v1`)
+and is included in the Hub full backup (format v4).
+
+- **Stopwatch**: Start/Pause/Resume, Lap (up to 200 with split + total), Reset.
+  A running stopwatch survives reload — closing and reopening keeps counting.
+- **Counters**: Add unlimited named counters (100 max, step 1–1000000 each).
+  Plus/minus by step, reset to zero, click the name pill to rename, trash to delete.
+- **Reading tracker**: fully automatic — every second with a document open and the
+  tab visible adds to that file's total and today's total. Day streak counts
+  consecutive active days. Set the daily goal (5–480 min) with the slider; the bar
+  fills as today progresses.
+- **Todo**: scope This file (tasks attached to the open PDF, needs a file open)
+  or Everything (global tasks plus every file's tasks with a file badge).
+  Filter All/Active/Done, Enter to add, click the box to toggle, Clear done,
+  export the current view as TXT.
+- **Tools data card**: Backup downloads one JSON file with all four tools;
+  Restore loads it back; Reset wipes only tools data (PDFs, markers and
+  bookmarks untouched) after confirmation.

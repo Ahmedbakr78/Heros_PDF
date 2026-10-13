@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) + [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Productivity Studio (Tools sidebar tab): stopwatch with laps, unlimited counters,
+  automatic reading tracker with streaks and daily goal, file-scoped and global todos
+- Everything in Tools auto-saves locally; one-file backup/restore/reset included in full backup v4
+- Tools menu entry + T shortcut; tracker and file todos refresh on document open
+
 ## [2.3.2] — 2026-10-13 — Ultra-Round Studio
 
 ### Added

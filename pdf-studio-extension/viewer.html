@@ -876,6 +876,38 @@ body.spread-on .page{margin:0}
 .kv{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:5px 0}
 .kv b{color:var(--text);font-variant-numeric:tabular-nums}
 
+/* ---------- Productivity studio (stopwatch / counters / tracker / todo) ---------- */
+.sw-digits{font-family:var(--mono);font-size:34px;font-weight:800;letter-spacing:-.5px;text-align:center;
+  font-variant-numeric:tabular-nums;background:var(--surface-3);border:1px solid var(--border);
+  border-radius:18px;padding:12px 8px;margin:2px 0 10px}
+.sw-digits small{font-size:14px;color:var(--muted);font-weight:700}
+.lap-row,.cnt-row,.todo-row{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:12px;
+  background:var(--surface-3);border:1px solid var(--border);margin-bottom:7px}
+.lap-row .n,.cnt-row .n{font-family:var(--mono);font-size:11px;font-weight:800;background:var(--surface);
+  border:1px solid var(--border-2);border-radius:99px;padding:2px 9px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.lap-row .t,.cnt-row .t{flex:1;min-width:0;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lap-row .s{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cnt-val{font-family:var(--mono);font-size:20px;font-weight:800;min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
+.cnt-step{width:56px;height:32px;text-align:center;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;font-size:12px;font-weight:700;outline:none}
+.cnt-step:focus{border-color:var(--accent)}
+.stepper{display:flex;gap:6px;flex:0 0 auto}
+.stepper .btn{min-width:38px;padding:0 10px;height:34px;font-size:16px;font-weight:800}
+.todo-check{width:24px;height:24px;border-radius:8px;border:2px solid var(--border-2);flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface);padding:0}
+.todo-check.done{background:var(--accent);border-color:var(--accent);color:#fff}
+.todo-check .ic{width:14px;height:14px}
+.todo-txt{flex:1;min-width:0;font-size:13px;line-height:1.4;word-break:break-word}
+.todo-row.done .todo-txt{color:var(--muted);text-decoration:line-through}
+.todo-doc{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);
+  border-radius:99px;padding:1px 8px;flex:0 0 auto;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.goal-bar{height:10px;border-radius:99px;background:var(--surface-3);border:1px solid var(--border);overflow:hidden;margin:6px 0 4px}
+.goal-bar i{display:block;height:100%;width:0%;border-radius:99px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-h));transition:width .3s var(--ease)}
+.autosave{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.autosave .dotok{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:0 0 auto}
+
 /* ---------- Edit grid / marks / bookmark rows ---------- */
 .edit-cell{position:relative;border-radius:14px;overflow:hidden;background:var(--surface-2);border:2px solid transparent;cursor:pointer;box-shadow:var(--shadow-sm);transition:border-color .15s}
 .edit-cell:hover{border-color:var(--border-2)}
@@ -1125,6 +1157,9 @@ body.spread-on .page{margin:0}
         <button class="side-tab" data-pane="hub" role="tab" title="Hub — profile, stats, settings">
           <svg class="ic"><use href="#i-hub"/></svg><span>Hub</span>
         </button>
+        <button class="side-tab" data-pane="tools" role="tab" title="Tools — stopwatch, counters, reading tracker, todo">
+          <svg class="ic"><use href="#i-clock"/></svg><span>Tools</span>
+        </button>
       </div>
 
       <div class="side-body">
@@ -1370,7 +1405,7 @@ body.spread-on .page{margin:0}
               <button class="btn accent" id="btnAddBookmark"><svg class="ic"><use href="#i-star"/></svg>Save page <span id="bmPageLbl"></span></button>
             </div>
             <div id="bmList"></div>
-            <div class="placeholder" id="bmEmpty"><svg class="ic"><use href="#i-star"/></svg>No saved pages yet — press ★ on any page</div>
+            <div class="placeholder" id="bmEmpty"><svg class="ic"><use href="#i-star"/></svg>No saved pages yet — press the star button on any page</div>
           </div>
         </div>
 
@@ -1471,6 +1506,79 @@ body.spread-on .page{margin:0}
               <button class="btn" id="btnBackupAll"><svg class="ic"><use href="#i-download"/></svg>Backup</button>
               <button class="btn" id="btnRestoreAll"><svg class="ic"><use href="#i-upload-cloud"/></svg>Restore</button>
               <button class="btn danger" id="btnResetAll"><svg class="ic"><use href="#i-trash"/></svg>Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tools : stopwatch + counters + reading tracker + todo (all auto-saved) -->
+        <div class="side-pane" id="pane-tools">
+          <div class="side-head"><span class="side-title">Tools — free, unlimited, auto-saved</span></div>
+          <div class="tool-card">
+            <div class="autosave"><span class="dotok"></span><span id="toolsSavedLbl">Everything saved locally</span></div>
+          </div>
+          <div class="tool-card">
+            <h4><svg class="ic"><use href="#i-clock"/></svg>Stopwatch</h4>
+            <p>Study sessions, timed reading, presentations. Keeps running while you read.</p>
+            <div class="sw-digits" id="swDigits">00:00<small>.00</small></div>
+            <div class="tool-row">
+              <button class="btn accent" id="btnSwStart">Start</button>
+              <button class="btn" id="btnSwLap" title="Record a lap">Lap</button>
+              <button class="btn ghost" id="btnSwReset" title="Reset to zero">Reset</button>
+            </div>
+            <div class="mini-label">Laps</div>
+            <div id="swLaps"></div>
+            <div class="placeholder" id="swLapsEmpty" style="padding:12px 8px">No laps yet — press Lap while running</div>
+          </div>
+          <div class="tool-card">
+            <h4><svg class="ic"><use href="#i-plus"/></svg>Counters</h4>
+            <p>Count anything — pages reviewed, reps, glasses of water. Unlimited counters, each with its own step.</p>
+            <div class="tool-row" style="margin-bottom:10px">
+              <input class="field" id="cntName" placeholder="New counter name" maxlength="40" style="margin-bottom:0;flex:1">
+              <button class="btn accent" id="btnCntAdd" style="flex:0 0 auto"><svg class="ic"><use href="#i-plus"/></svg>Add</button>
+            </div>
+            <div id="cntList"></div>
+            <div class="placeholder" id="cntEmpty" style="padding:12px 8px">No counters yet — add one above</div>
+          </div>
+          <div class="tool-card">
+            <h4><svg class="ic"><use href="#i-chart"/></svg>Reading tracker</h4>
+            <p>Automatic: time is counted while a document is open and visible. Set a daily goal.</p>
+            <div class="kv"><span>Today</span><b id="trkToday">0 min</b></div>
+            <div class="kv"><span>This file (total)</span><b id="trkFile">0 min</b></div>
+            <div class="kv"><span>Day streak</span><b id="trkStreak">0 days</b></div>
+            <div class="goal-bar"><i id="trkGoalFill"></i></div>
+            <div class="kv"><span>Daily goal</span><b id="trkGoalLbl">30 min</b></div>
+            <div class="slider-row"><span>Goal</span><input type="range" id="trkGoal" min="5" max="240" step="5" value="30"><b id="trkGoalVal">30m</b></div>
+          </div>
+          <div class="tool-card">
+            <h4><svg class="ic"><use href="#i-list"/></svg>Todo</h4>
+            <p>Tasks for this file or in general. Check off, filter, export.</p>
+            <div class="seg" id="todoScopeSeg">
+              <button data-tscope="file" class="on">This file</button>
+              <button data-tscope="all">Everything</button>
+            </div>
+            <div class="seg" id="todoFilterSeg" style="margin-top:8px">
+              <button data-tfilter="all" class="on">All</button>
+              <button data-tfilter="active">Active</button>
+              <button data-tfilter="done">Done</button>
+            </div>
+            <div class="tool-row" style="margin-bottom:10px;margin-top:10px">
+              <input class="field" id="todoInput" placeholder="New task — press Enter" maxlength="140" style="margin-bottom:0;flex:1">
+              <button class="btn accent" id="btnTodoAdd" style="flex:0 0 auto"><svg class="ic"><use href="#i-plus"/></svg>Add</button>
+            </div>
+            <div id="todoList"></div>
+            <div class="placeholder" id="todoEmpty" style="padding:12px 8px">No tasks yet — add one above</div>
+            <div class="tool-row" style="margin-top:8px">
+              <button class="btn ghost" id="btnTodoClear" title="Delete all completed tasks">Clear done</button>
+              <button class="btn ghost" id="btnTodoExport" title="Download tasks as TXT"><svg class="ic ic-sm"><use href="#i-download"/></svg>TXT</button>
+            </div>
+          </div>
+          <div class="tool-card">
+            <h4><svg class="ic"><use href="#i-save"/></svg>Tools data</h4>
+            <p>Stopwatch, counters, tracker and todos are saved automatically on this device. Backup or move them as one file.</p>
+            <div class="tool-row">
+              <button class="btn" id="btnToolsBackup"><svg class="ic"><use href="#i-download"/></svg>Backup</button>
+              <button class="btn" id="btnToolsRestore"><svg class="ic"><use href="#i-upload-cloud"/></svg>Restore</button>
+              <button class="btn danger" id="btnToolsReset"><svg class="ic"><use href="#i-trash"/></svg>Reset</button>
             </div>
           </div>
         </div>
@@ -1626,6 +1734,7 @@ body.spread-on .page{margin:0}
 <input type="file" id="txtInput" accept=".txt,text/plain" hidden>
 <input type="file" id="marksInput" accept="application/json,.json" hidden>
 <input type="file" id="restoreInput" accept="application/json,.json" hidden>
+<input type="file" id="toolsInput" accept="application/json,.json" hidden>
 
 <!-- ==========================================================================
      PDF.JS (bundled locally — works fully offline)

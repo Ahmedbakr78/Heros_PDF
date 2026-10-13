@@ -237,6 +237,13 @@ The printable checklist also lives in [`docs/FEATURES.md`](./docs/FEATURES.md).
 - [x] Unlimited pages, unlimited merges, unlimited annotations
 - [x] Works offline after install (all vendor files vendored locally)
 
+### 8. Productivity Studio — Stopwatch, Counters, Tracker, Todo
+- [x] Stopwatch with Start/Pause/Lap/Reset and 200-lap history, survives reload
+- [x] Unlimited named counters with custom step, rename, reset, delete
+- [x] Reading tracker: automatic per-file and per-day time, streaks, daily goal bar
+- [x] Todo: file-scoped and global tasks, filters, clear-done, TXT export
+- [x] One-file tools backup/restore/reset, included in full backup, T shortcut
+
 ---
 
 ## Heros PDF vs Everyone Else
@@ -551,6 +558,10 @@ Full illustrated guide: [`docs/INSTALLATION.md`](./docs/INSTALLATION.md).
 | Night reading | More menu → Page mode → Night / Sepia / Dim |
 | Print | Ctrl+P or More → Print (uses native print with current rotation) |
 | Download | Download button (original or edited bytes) |
+| Time a session | Tools tab → Stopwatch → Start/Lap, or press T |
+| Count anything | Tools tab → Counters → Add, plus/minus by step |
+| Track reading | Tools tab → Reading tracker (automatic) + daily goal slider |
+| Manage tasks | Tools tab → Todo (This file or Everything), Enter to add |
 
 Long version with screenshots: [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md).
 
@@ -565,8 +576,9 @@ Long version with screenshots: [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md).
 | + / - / 0 | Zoom in / out / reset | Ctrl+B | Toggle sidebar |
 | Ctrl+Z / Ctrl+Shift+Z | Undo / redo annotation | Delete | Delete selected edit pages |
 | F | Fit width | R | Rotate right |
-| Space / Shift+Space | Scroll down / up | F11 | Fullscreen |
-| Ctrl+P | Print | Esc | Close modal / menu |
+| T | Productivity tools | Space / Shift+Space | Scroll down / up |
+| Ctrl+P | Print | F11 | Fullscreen |
+| Esc | Close modal / menu | - | - |
 
 Full list is also in-app: More → Keyboard shortcuts.
 

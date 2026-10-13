@@ -679,6 +679,9 @@ async function onDocumentReady(doc, name, size) {
   // restore last page
   restoreLastPage();
 
+  // refresh productivity studio for the new file (tracker + file todos)
+  try { if (typeof renderToolsAll === 'function') renderToolsAll(); } catch (e) {}
+
   setStatus('Ready', 'ok');
   toast('Loaded ' + S.numPages + ' page' + (S.numPages > 1 ? 's' : ''), 'ok', 1800);
 }
@@ -1882,6 +1885,7 @@ D.btnMenu.addEventListener('click', () => {
     { icon: 'i-image', text: 'Export page as PNG', disabled: !has, action: () => { if (typeof exportPagePNG === 'function') exportPagePNG(); } },
     { icon: 'i-share', text: 'Share file', disabled: !has, action: () => { if (typeof shareFile === 'function') shareFile(); } },
     { icon: 'i-volume', text: 'Read page aloud', disabled: !has, action: toggleSpeak },
+    { icon: 'i-clock', text: 'Productivity tools (stopwatch, counters, tracker, todo)', action: () => { if (typeof openToolsPane === 'function') openToolsPane(); } },
     { icon: 'i-copy', text: 'Copy page text', kbd: 'C', disabled: !has, action: copyPageText },
     { icon: 'i-copy', text: 'Copy entire document text', disabled: !has, action: () => { if (typeof copyAllText === 'function') copyAllText(); } },
     { icon: 'i-maximize', text: 'Fullscreen', kbd: 'F11', action: toggleFullscreen },
@@ -4512,12 +4516,13 @@ async function backupAllFull() {
     } catch (e) {}
     allMarks.current = { docId: S.docId, pages: S.annots || {} };
     const data = {
-      exportedAt: Date.now(), version: 3,
+      exportedAt: Date.now(), version: 4,
       profile: S.profile, prefs: S.prefs, bookmarks: S.bookmarks,
       stats: S.stats, ttsRate: S.ttsRate,
       accent: lsGet('pdfstudio-accent-v1', null),
       sideW: lsGet('pdfstudio-sidew-v1', null),
-      marks: allMarks
+      marks: allMarks,
+      tools: lsGet('pdfstudio-tools-v1', null)
     };
     downloadBytes(JSON.stringify(data, null, 2), 'pdfstudio-full-backup.json', 'application/json');
     toast('Full backup downloaded', 'ok', 1600);
@@ -4536,6 +4541,7 @@ function restoreAllFull(file) {
       if (d.ttsRate) { S.ttsRate = d.ttsRate; lsSet('pdfstudio-tts-v1', { rate: d.ttsRate }); }
       if (d.accent && d.accent.color) lsSet('pdfstudio-accent-v1', d.accent);
       if (d.sideW && d.sideW.w) lsSet('pdfstudio-sidew-v1', d.sideW);
+      if (d.tools) { try { lsSet('pdfstudio-tools-v1', d.tools); loadTools(); } catch (e) {} }
       if (d.marks && d.marks.current && d.marks.current.pages && S.docId && d.marks.current.docId === S.docId) {
         S.annots = d.marks.current.pages;
         saveAnnotsNow();
@@ -4549,6 +4555,499 @@ function restoreAllFull(file) {
     } catch (e) { toast('Invalid backup file', 'err', 2200); }
   };
   rd.readAsText(file);
+}
+
+/* --------------------------------------------------------------------------
+   40. Productivity studio — stopwatch, counters, reading tracker, todo.
+   Everything auto-saves to localStorage (key pdfstudio-tools-v1) and is
+   included in the full backup (version 4). No network, no limits.
+   -------------------------------------------------------------------------- */
+const TOOLS_KEY = 'pdfstudio-tools-v1';
+const Tools = {
+  sw: { elapsed: 0, running: false, startedAt: 0, laps: [] },
+  counters: [],
+  tracker: { perDoc: {}, perName: {}, days: {}, goal: 30 },
+  todos: { global: [], byDoc: {} },
+  ui: { todoScope: 'file', todoFilter: 'all' }
+};
+function todayKey(d) {
+  const t = d || new Date();
+  return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+}
+function uid(prefix) {
+  return (prefix || 'id') + '-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e6).toString(36);
+}
+function loadTools() {
+  const d = lsGet(TOOLS_KEY, null);
+  if (!d || typeof d !== 'object') return;
+  try {
+    if (d.sw && typeof d.sw === 'object') {
+      Tools.sw.elapsed = Math.max(0, Number(d.sw.elapsed) || 0);
+      Tools.sw.laps = Array.isArray(d.sw.laps) ? d.sw.laps.slice(0, 200) : [];
+      // Resume a stopwatch that was running when the page closed: time kept passing.
+      if (d.sw.running && d.sw.startedAt) {
+        Tools.sw.running = true;
+        Tools.sw.startedAt = Number(d.sw.startedAt) || Date.now();
+      }
+    }
+    if (Array.isArray(d.counters)) {
+      Tools.counters = d.counters.slice(0, 100).map(c => ({
+        id: String(c.id || uid('c')),
+        name: String(c.name || 'Counter').slice(0, 40),
+        value: Math.trunc(Number(c.value) || 0),
+        step: Math.min(1000000, Math.max(1, Math.trunc(Number(c.step) || 1)))
+      }));
+    }
+    if (d.tracker && typeof d.tracker === 'object') {
+      const t = d.tracker;
+      Tools.tracker.perDoc = (t.perDoc && typeof t.perDoc === 'object') ? t.perDoc : {};
+      Tools.tracker.perName = (t.perName && typeof t.perName === 'object') ? t.perName : {};
+      Tools.tracker.days = (t.days && typeof t.days === 'object') ? t.days : {};
+      const g = Math.trunc(Number(t.goal) || 30);
+      Tools.tracker.goal = Math.min(480, Math.max(5, g));
+    }
+    if (d.todos && typeof d.todos === 'object') {
+      const clean = (a) => (Array.isArray(a) ? a.slice(0, 500) : []).map(x => ({
+        id: String(x.id || uid('t')),
+        text: String(x.text || '').slice(0, 140),
+        done: !!x.done,
+        at: Number(x.at) || Date.now()
+      })).filter(x => x.text.length > 0);
+      Tools.todos.global = clean(d.todos.global);
+      Tools.todos.byDoc = {};
+      const byDoc = d.todos.byDoc || {};
+      Object.keys(byDoc).slice(0, 200).forEach(k => {
+        const e = byDoc[k] || {};
+        Tools.todos.byDoc[k] = { name: String(e.name || 'Document').slice(0, 80), tasks: clean(e.tasks) };
+      });
+    }
+  } catch (e) {}
+}
+function saveTools() {
+  lsSet(TOOLS_KEY, { sw: Tools.sw, counters: Tools.counters, tracker: Tools.tracker, todos: Tools.todos });
+  const lbl = document.getElementById('toolsSavedLbl');
+  if (lbl) {
+    const t = new Date();
+    lbl.textContent = 'Everything saved locally · ' +
+      String(t.getHours()).padStart(2, '0') + ':' +
+      String(t.getMinutes()).padStart(2, '0') + ':' +
+      String(t.getSeconds()).padStart(2, '0');
+  }
+}
+const saveToolsSoon = debounce(() => saveTools(), 400);
+function openToolsPane() {
+  try { switchPane('tools'); } catch (e) {}
+  if (window.innerWidth <= 900) {
+    try {
+      D.sidebar.classList.add('open');
+      D.sideBackdrop.classList.add('show');
+    } catch (err) {}
+  }
+  try { renderToolsAll(); } catch (e) {}
+}
+
+/* ---------- stopwatch ---------- */
+function swNow() {
+  return Tools.sw.elapsed + (Tools.sw.running ? (Date.now() - Tools.sw.startedAt) : 0);
+}
+function fmtSw(ms) {
+  ms = Math.max(0, Math.floor(ms));
+  const cs = Math.floor((ms % 1000) / 10);
+  const s = Math.floor(ms / 1000) % 60;
+  const m = Math.floor(ms / 60000) % 60;
+  const h = Math.floor(ms / 3600000);
+  const mm = (h > 0 ? String(m).padStart(2, '0') : String(m).padStart(2, '0'));
+  const ss = String(s).padStart(2, '0');
+  const cc = String(cs).padStart(2, '0');
+  return (h > 0 ? h + ':' + mm : mm) + ':' + ss + '.' + cc;
+}
+function fmtClock(ms) {
+  ms = Math.max(0, Math.floor(ms));
+  const s = Math.floor(ms / 1000) % 60;
+  const m = Math.floor(ms / 60000) % 60;
+  const h = Math.floor(ms / 3600000);
+  if (h > 0) return h + 'h ' + m + 'm';
+  if (m > 0) return m + 'm ' + s + 's';
+  return s + 's';
+}
+function renderStopwatch() {
+  const d = document.getElementById('swDigits');
+  if (d) {
+    const parts = fmtSw(swNow()).split('.');
+    d.innerHTML = esc(parts[0]) + '<small>.' + esc(parts[1] || '00') + '</small>';
+  }
+  const b = document.getElementById('btnSwStart');
+  if (b) b.textContent = Tools.sw.running ? 'Pause' : (swNow() > 0 ? 'Resume' : 'Start');
+  const laps = document.getElementById('swLaps');
+  const empty = document.getElementById('swLapsEmpty');
+  if (laps) {
+    laps.innerHTML = '';
+    const arr = Tools.sw.laps;
+    if (empty) empty.hidden = arr.length > 0;
+    const frag = document.createDocumentFragment();
+    for (let i = arr.length - 1; i >= 0; i--) {
+      const row = document.createElement('div');
+      row.className = 'lap-row';
+      row.innerHTML = '<span class="n">Lap ' + (i + 1) + '</span>' +
+        '<span class="t">' + esc(fmtClock(arr[i].total)) + ' total</span>' +
+        '<span class="s">+' + esc(fmtClock(arr[i].split)) + '</span>';
+      frag.appendChild(row);
+    }
+    laps.appendChild(frag);
+  }
+}
+function swStartPause() {
+  if (Tools.sw.running) {
+    Tools.sw.elapsed = swNow();
+    Tools.sw.running = false;
+  } else {
+    Tools.sw.startedAt = Date.now();
+    Tools.sw.running = true;
+  }
+  saveTools();
+  renderStopwatch();
+}
+function swLap() {
+  if (!Tools.sw.running && swNow() === 0) { toast('Start the stopwatch first', null, 1500); return; }
+  const total = swNow();
+  const prev = Tools.sw.laps.length ? Tools.sw.laps[Tools.sw.laps.length - 1].total : 0;
+  Tools.sw.laps.push({ total: total, split: total - prev, at: Date.now() });
+  if (Tools.sw.laps.length > 200) Tools.sw.laps.shift();
+  saveTools();
+  renderStopwatch();
+  toast('Lap ' + Tools.sw.laps.length + ' recorded', 'ok', 1200);
+}
+function swReset() {
+  Tools.sw.elapsed = 0;
+  Tools.sw.running = false;
+  Tools.sw.startedAt = 0;
+  Tools.sw.laps = [];
+  saveTools();
+  renderStopwatch();
+}
+
+/* ---------- counters ---------- */
+function renderCounters() {
+  const list = document.getElementById('cntList');
+  const empty = document.getElementById('cntEmpty');
+  if (!list) return;
+  list.innerHTML = '';
+  if (empty) empty.hidden = Tools.counters.length > 0;
+  const frag = document.createDocumentFragment();
+  Tools.counters.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'cnt-row';
+    row.innerHTML = '<div class="n" title="' + esc(c.name) + '">' + esc(c.name.length > 14 ? c.name.slice(0, 14) + '…' : c.name) + '</div>' +
+      '<div class="cnt-val">' + c.value + '</div>' +
+      '<div class="stepper">' +
+      '<button class="btn ghost" data-act="dec" title="Minus step">−</button>' +
+      '<button class="btn ghost" data-act="inc" title="Plus step">+</button>' +
+      '</div>' +
+      '<input class="cnt-step" data-act="step" type="number" min="1" max="1000000" value="' + c.step + '" title="Step size">' +
+      '<button class="ibtn" data-act="reset" style="width:28px;height:28px" title="Reset to 0"><svg class="ic ic-sm"><use href="#i-refresh"/></svg></button>' +
+      '<button class="ibtn" data-act="del" style="width:28px;height:28px" title="Delete counter"><svg class="ic ic-sm"><use href="#i-trash"/></svg></button>';
+    row.querySelector('[data-act="inc"]').addEventListener('click', () => { c.value += c.step; saveTools(); renderCounters(); });
+    row.querySelector('[data-act="dec"]').addEventListener('click', () => { c.value -= c.step; saveTools(); renderCounters(); });
+    row.querySelector('[data-act="reset"]').addEventListener('click', () => { c.value = 0; saveTools(); renderCounters(); });
+    row.querySelector('[data-act="del"]').addEventListener('click', () => {
+      Tools.counters = Tools.counters.filter(x => x.id !== c.id);
+      saveTools(); renderCounters();
+    });
+    row.querySelector('[data-act="step"]').addEventListener('change', (e) => {
+      const v = Math.trunc(Number(e.target.value) || 1);
+      c.step = Math.min(1000000, Math.max(1, v));
+      saveTools(); renderCounters();
+    });
+    row.querySelector('.n').addEventListener('click', () => {
+      openModal({
+        title: 'Rename counter', icon: 'i-edit',
+        html: '<input class="field" id="cntRename" maxlength="40" value="' + esc(c.name) + '">',
+        footer: '<button class="btn" data-close="1">Cancel</button><button class="btn accent" id="cntRenameGo">Save</button>',
+        onMount(m) {
+          m.querySelector('#cntRenameGo').addEventListener('click', () => {
+            const v = m.querySelector('#cntRename').value.trim().slice(0, 40);
+            if (v) c.name = v;
+            saveTools(); renderCounters(); closeModal();
+          });
+        }
+      });
+    });
+    frag.appendChild(row);
+  });
+  list.appendChild(frag);
+}
+function addCounter() {
+  const inp = document.getElementById('cntName');
+  const name = inp ? inp.value.trim().slice(0, 40) : '';
+  if (!name) { toast('Name the counter first', 'err', 1500); if (inp) inp.focus(); return; }
+  if (Tools.counters.length >= 100) { toast('Counter limit reached (100)', 'err', 1800); return; }
+  Tools.counters.push({ id: uid('c'), name: name, value: 0, step: 1 });
+  if (inp) inp.value = '';
+  saveTools(); renderCounters();
+  toast('Counter added', 'ok', 1200);
+}
+
+/* ---------- reading tracker ---------- */
+function fmtMin(secs) {
+  secs = Math.max(0, Math.floor(secs || 0));
+  const m = Math.floor(secs / 60);
+  if (m < 60) return m + ' min';
+  const h = Math.floor(m / 60);
+  return h + 'h ' + (m % 60) + 'm';
+}
+function trackerStreak() {
+  const days = Tools.tracker.days || {};
+  let streak = 0;
+  const d = new Date();
+  // streak counts back from today (or yesterday if today is still empty)
+  if (!days[todayKey(d)]) d.setDate(d.getDate() - 1);
+  while (days[todayKey(d)] > 0) { streak++; d.setDate(d.getDate() - 1); }
+  return streak;
+}
+function renderTracker() {
+  const t = Tools.tracker;
+  const todaySecs = t.days[todayKey()] || 0;
+  const fileSecs = (S.docId && t.perDoc[S.docId]) ? t.perDoc[S.docId] : 0;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('trkToday', fmtMin(todaySecs));
+  set('trkFile', fmtMin(fileSecs));
+  set('trkStreak', trackerStreak() + (trackerStreak() === 1 ? ' day' : ' days'));
+  const goalSecs = (t.goal || 30) * 60;
+  const pct = Math.min(100, Math.round((todaySecs / goalSecs) * 100));
+  const fill = document.getElementById('trkGoalFill');
+  if (fill) fill.style.width = pct + '%';
+  set('trkGoalLbl', (t.goal || 30) + ' min');
+  const g = document.getElementById('trkGoal');
+  if (g && document.activeElement !== g) g.value = t.goal || 30;
+  const gv = document.getElementById('trkGoalVal');
+  if (gv) gv.textContent = (t.goal || 30) + 'm';
+}
+
+/* ---------- todo ---------- */
+function todoDocKey() { return S.docId || null; }
+function todoDocName() {
+  const n = (S.file && S.file.name) || S.title || 'Document';
+  return String(n).replace(/\.pdf$/i, '').slice(0, 80) || 'Document';
+}
+function todoVisible() {
+  const scope = Tools.ui.todoScope;
+  const f = Tools.ui.todoFilter;
+  let arr = [];
+  if (scope === 'file') {
+    const k = todoDocKey();
+    arr = k && Tools.todos.byDoc[k] ? Tools.todos.byDoc[k].tasks.map(t => ({ t: t, doc: null })) : [];
+  } else {
+    Tools.todos.global.forEach(t => arr.push({ t: t, doc: null }));
+    Object.keys(Tools.todos.byDoc).forEach(k => {
+      (Tools.todos.byDoc[k].tasks || []).forEach(t => arr.push({ t: t, doc: Tools.todos.byDoc[k].name }));
+    });
+    arr.sort((a, b) => (a.t.done - b.t.done) || (b.t.at - a.t.at));
+  }
+  if (f === 'active') arr = arr.filter(x => !x.t.done);
+  if (f === 'done') arr = arr.filter(x => x.t.done);
+  return arr.slice(0, 300);
+}
+function renderTodos() {
+  document.querySelectorAll('#todoScopeSeg button').forEach(b =>
+    b.classList.toggle('on', b.dataset.tscope === Tools.ui.todoScope));
+  document.querySelectorAll('#todoFilterSeg button').forEach(b =>
+    b.classList.toggle('on', b.dataset.tfilter === Tools.ui.todoFilter));
+  const list = document.getElementById('todoList');
+  const empty = document.getElementById('todoEmpty');
+  if (!list) return;
+  list.innerHTML = '';
+  if (Tools.ui.todoScope === 'file' && !todoDocKey()) {
+    if (empty) { empty.hidden = false; empty.textContent = 'Open a PDF to keep file tasks here — or switch to Everything'; }
+    return;
+  }
+  const arr = todoVisible();
+  if (empty) empty.hidden = arr.length > 0;
+  const frag = document.createDocumentFragment();
+  arr.forEach(x => {
+    const row = document.createElement('div');
+    row.className = 'todo-row' + (x.t.done ? ' done' : '');
+    row.innerHTML = '<button class="todo-check' + (x.t.done ? ' done' : '') + '" title="Toggle done">' +
+        (x.t.done ? '<svg class="ic"><use href="#i-check"/></svg>' : '') + '</button>' +
+      '<div class="todo-txt">' + esc(x.t.text) + '</div>' +
+      (x.doc ? '<span class="todo-doc" title="' + esc(x.doc) + '">' + esc(x.doc.length > 14 ? x.doc.slice(0, 14) + '…' : x.doc) + '</span>' : '') +
+      '<button class="ibtn" data-act="del" style="width:28px;height:28px" title="Delete task"><svg class="ic ic-sm"><use href="#i-trash"/></svg></button>';
+    row.querySelector('.todo-check').addEventListener('click', () => {
+      x.t.done = !x.t.done;
+      saveTools(); renderTodos(); renderToolsStats();
+    });
+    row.querySelector('[data-act="del"]').addEventListener('click', () => {
+      removeTodoById(x.t.id);
+      saveTools(); renderTodos(); renderToolsStats();
+    });
+    frag.appendChild(row);
+  });
+  list.appendChild(frag);
+}
+function removeTodoById(id) {
+  Tools.todos.global = Tools.todos.global.filter(t => t.id !== id);
+  Object.keys(Tools.todos.byDoc).forEach(k => {
+    Tools.todos.byDoc[k].tasks = (Tools.todos.byDoc[k].tasks || []).filter(t => t.id !== id);
+    if (!Tools.todos.byDoc[k].tasks.length) delete Tools.todos.byDoc[k];
+  });
+}
+function addTodo() {
+  const inp = document.getElementById('todoInput');
+  const text = inp ? inp.value.trim().slice(0, 140) : '';
+  if (!text) { toast('Write the task first', 'err', 1500); if (inp) inp.focus(); return; }
+  const item = { id: uid('t'), text: text, done: false, at: Date.now() };
+  if (Tools.ui.todoScope === 'file') {
+    const k = todoDocKey();
+    if (!k) { toast('Open a PDF for file tasks — or switch scope to Everything', 'err', 2200); return; }
+    if (!Tools.todos.byDoc[k]) Tools.todos.byDoc[k] = { name: todoDocName(), tasks: [] };
+    Tools.todos.byDoc[k].name = todoDocName();
+    Tools.todos.byDoc[k].tasks.unshift(item);
+  } else {
+    Tools.todos.global.unshift(item);
+  }
+  if (inp) inp.value = '';
+  saveTools(); renderTodos(); renderToolsStats();
+}
+function clearDoneTodos() {
+  let n = 0;
+  const sweep = (a) => { const before = a.length; const kept = a.filter(t => !t.done); n += before - kept.length; return kept; };
+  Tools.todos.global = sweep(Tools.todos.global);
+  Object.keys(Tools.todos.byDoc).forEach(k => {
+    Tools.todos.byDoc[k].tasks = sweep(Tools.todos.byDoc[k].tasks);
+    if (!Tools.todos.byDoc[k].tasks.length) delete Tools.todos.byDoc[k];
+  });
+  saveTools(); renderTodos(); renderToolsStats();
+  toast(n ? n + ' completed task' + (n === 1 ? '' : 's') + ' cleared' : 'No completed tasks', n ? 'ok' : null, 1500);
+}
+function exportTodos() {
+  const arr = todoVisible();
+  if (!arr.length) { toast('Nothing to export', 'err', 1500); return; }
+  const lines = ['Heros PDF — Todo export', new Date().toLocaleString(), ''];
+  arr.forEach(x => lines.push((x.t.done ? '[x] ' : '[ ] ') + x.t.text + (x.doc ? '  (file: ' + x.doc + ')' : '')));
+  downloadBytes(lines.join('\n'), 'heros-todo.txt', 'text/plain');
+  toast('Tasks exported', 'ok', 1500);
+}
+
+/* ---------- tools data: backup / restore / reset ---------- */
+function backupTools() {
+  downloadBytes(JSON.stringify({ exportedAt: Date.now(), app: 'heros-pdf-tools', tools: lsGet(TOOLS_KEY, {}) }, null, 2),
+    'heros-tools-backup.json', 'application/json');
+  toast('Tools backup downloaded', 'ok', 1600);
+}
+function restoreToolsFile(file) {
+  if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      const t = d.tools || d;
+      if (!t || typeof t !== 'object' || (!t.sw && !t.counters && !t.tracker && !t.todos)) throw new Error('bad');
+      lsSet(TOOLS_KEY, { sw: t.sw || Tools.sw, counters: t.counters || [], tracker: t.tracker || Tools.tracker, todos: t.todos || Tools.todos });
+      loadTools();
+      saveTools(); renderToolsAll();
+      toast('Tools restored', 'ok', 1800);
+    } catch (e) { toast('Invalid tools backup file', 'err', 2200); }
+  };
+  rd.readAsText(file);
+}
+function resetTools() {
+  openModal({
+    title: 'Reset tools data', icon: 'i-trash',
+    html: '<p style="margin:0;font-size:13.5px;color:var(--muted);line-height:1.6">Delete the stopwatch, all counters, tracker history and all todos on this device? This cannot be undone. Your PDFs, markers and bookmarks are not touched.</p>',
+    footer: '<button class="btn" data-close="1">Cancel</button><button class="btn danger" id="toolsResetGo" style="background:var(--danger);color:#fff">Reset everything</button>',
+    onMount(m) {
+      m.querySelector('#toolsResetGo').addEventListener('click', () => {
+        Tools.sw = { elapsed: 0, running: false, startedAt: 0, laps: [] };
+        Tools.counters = [];
+        Tools.tracker = { perDoc: {}, perName: {}, days: {}, goal: 30 };
+        Tools.todos = { global: [], byDoc: {} };
+        saveTools(); renderToolsAll(); closeModal();
+        toast('Tools data reset', 'ok', 1600);
+      });
+    }
+  });
+}
+
+/* ---------- hub stats extension + render all ---------- */
+function renderToolsStats() {
+  try {
+    const open = Tools.todos.global.filter(t => !t.done).length +
+      Object.keys(Tools.todos.byDoc).reduce((n, k) => n + (Tools.todos.byDoc[k].tasks || []).filter(t => !t.done).length, 0);
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    void open; void set;
+  } catch (e) {}
+}
+function renderToolsAll() {
+  try { renderStopwatch(); } catch (e) {}
+  try { renderCounters(); } catch (e) {}
+  try { renderTracker(); } catch (e) {}
+  try { renderTodos(); } catch (e) {}
+}
+/* one-second engine: stopwatch paint (cheap) + tracker accounting */
+let toolsTickN = 0;
+setInterval(() => {
+  try {
+    if (Tools.sw.running) {
+      const d = document.getElementById('swDigits');
+      if (d && document.getElementById('pane-tools').classList.contains('active')) {
+        const parts = fmtSw(swNow()).split('.');
+        d.innerHTML = esc(parts[0]) + '<small>.' + esc(parts[1] || '00') + '</small>';
+      }
+    }
+    if (S.doc && S.docId && document.visibilityState === 'visible') {
+      const t = Tools.tracker;
+      t.perDoc[S.docId] = (t.perDoc[S.docId] || 0) + 1;
+      t.perName[S.docId] = todoDocName();
+      t.days[todayKey()] = (t.days[todayKey()] || 0) + 1;
+      toolsTickN++;
+      if (toolsTickN % 10 === 0) { saveToolsSoon(); renderTracker(); }
+    }
+  } catch (e) {}
+}, 1000);
+function wireTools() {
+  const tOn = (sel, ev, fn) => {
+    const el = typeof sel === 'string' ? document.querySelector(sel) : sel;
+    if (el && !el.dataset.twired) { el.dataset.twired = '1'; el.addEventListener(ev, fn); }
+  };
+  tOn('#btnSwStart', 'click', swStartPause);
+  tOn('#btnSwLap', 'click', swLap);
+  tOn('#btnSwReset', 'click', swReset);
+  tOn('#btnCntAdd', 'click', addCounter);
+  tOn('#cntName', 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addCounter(); } });
+  tOn('#trkGoal', 'input', (e) => {
+    const v = Math.min(480, Math.max(5, Math.trunc(Number(e.target.value) || 30)));
+    Tools.tracker.goal = v;
+    const gv = document.getElementById('trkGoalVal');
+    if (gv) gv.textContent = v + 'm';
+    const gl = document.getElementById('trkGoalLbl');
+    if (gl) gl.textContent = v + ' min';
+    const fill = document.getElementById('trkGoalFill');
+    if (fill) fill.style.width = Math.min(100, Math.round(((Tools.tracker.days[todayKey()] || 0) / (v * 60)) * 100)) + '%';
+    saveToolsSoon();
+  });
+  tOn('#todoScopeSeg', 'click', (e) => {
+    const b = e.target.closest('button[data-tscope]');
+    if (!b) return;
+    Tools.ui.todoScope = b.dataset.tscope;
+    renderTodos();
+  });
+  tOn('#todoFilterSeg', 'click', (e) => {
+    const b = e.target.closest('button[data-tfilter]');
+    if (!b) return;
+    Tools.ui.todoFilter = b.dataset.tfilter;
+    renderTodos();
+  });
+  tOn('#btnTodoAdd', 'click', addTodo);
+  tOn('#todoInput', 'keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addTodo(); } });
+  tOn('#btnTodoClear', 'click', clearDoneTodos);
+  tOn('#btnTodoExport', 'click', exportTodos);
+  tOn('#btnToolsBackup', 'click', backupTools);
+  tOn('#btnToolsRestore', 'click', () => { const el = document.getElementById('toolsInput'); if (el) el.click(); });
+  tOn('#toolsInput', 'change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    restoreToolsFile(f);
+  });
+  tOn('#btnToolsReset', 'click', resetTools);
 }
 
 /* ---------- wire power UI ---------- */
@@ -4818,6 +5317,7 @@ function wirePower() {
       else if (S.annotMode) { e.preventDefault(); setAnnotTool('underline'); }
     }
     else if ((e.key === 's' || e.key === 'S') && S.annotMode) { e.preventDefault(); setAnnotTool('strike'); }
+    else if ((e.key === 't' || e.key === 'T') && !S.annotMode) { e.preventDefault(); if (typeof openToolsPane === 'function') openToolsPane(); }
   });
   // manual scroll stops auto-scroll + idle prefetch for speed
   try {
@@ -4850,12 +5350,14 @@ function wirePower() {
   initAnnotBar();
   try { wireSelBar(); } catch (e) { console.warn('selbar', e); }
   wirePower();
+  try { loadTools(); wireTools(); } catch (e) {}
   try { renderMergeList(); } catch (e) {}
   try { renderSession(); } catch (e) {}
   buildEditGrid();
   renderAnnotsList();
   renderBmList();
   renderStats();
+  try { renderToolsAll(); } catch (e) {}
   paintBookmarkBtn();
   setStatus('Ready');
   D.pages.hidden = false;
