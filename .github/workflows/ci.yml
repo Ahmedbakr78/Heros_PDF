@@ -1,0 +1,62 @@
+name: CI — validate extension
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check required files exist
+        run: |
+          test -f pdf-studio-extension/manifest.json
+          test -f pdf-studio-extension/viewer.html
+          test -f pdf-studio-extension/app.js
+          test -f pdf-studio-extension/background.js
+          test -f pdf-studio-extension/nevaipdf-ops.js
+          test -f pdf-studio-extension/popup.html
+          echo "all core files present"
+
+      - name: Validate manifest.json
+        run: |
+          python3 -c "import json; m=json.load(open('pdf-studio-extension/manifest.json')); assert m['manifest_version']==3; assert m['version']; print('manifest', m['version'])"
+
+      - name: Check manifest version matches CHANGELOG
+        run: |
+          VER=$(python3 -c "import json; print(json.load(open('pdf-studio-extension/manifest.json'))['version'])")
+          grep -q "\[$VER\]" CHANGELOG.md && echo "CHANGELOG has [$VER]" || (echo "CHANGELOG missing [$VER]" && exit 1)
+
+      - name: Check no emojis in repo docs
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          emoji_re = re.compile(r'[\U0001F300-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF]')
+          bad = []
+          for p in list(pathlib.Path('.').glob('*.md')) + list(pathlib.Path('docs').glob('*.md')) + list(pathlib.Path('.github').rglob('*.md')):
+              t = p.read_text(encoding='utf-8', errors='ignore')
+              if emoji_re.search(t):
+                  bad.append(str(p))
+          if bad:
+              print('files with emojis:', bad)
+              raise SystemExit(1)
+          print('no emojis in docs')
+          PY
+
+      - name: Docs presence (README + site)
+        run: |
+          test -f README.md && test -f docs/index.html && echo "docs present"
+
+      - name: Build zip artifact
+        run: |
+          VER=$(python3 -c "import json; print(json.load(open('pdf-studio-extension/manifest.json'))['version'])")
+          cd pdf-studio-extension && zip -r -q "../heros-pdf-v${VER}.zip" . -x "*.DS_Store*"
+          cd .. && ls -lh heros-pdf-*.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: heros-pdf-zip
+          path: heros-pdf-*.zip

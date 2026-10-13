@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heros PDF — Fast, Private, Beautiful PDF Studio</title>
+<meta name="description" content="Heros PDF — fast, private, beautiful PDF viewer and editor. Read, annotate, merge, split, search. Dark + Light, mobile-ready, 100% local, free and unlimited.">
+<meta property="og:title" content="Heros PDF — PDF Studio Extension">
+<meta property="og:description" content="Read, annotate, merge, split, search. Dark + Light, mobile-ready, 100% local, free and unlimited.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ahmedbakr78.github.io/Heros_PDF/">
+<meta name="theme-color" content="#0e1014">
+<link rel="icon" type="image/png" href="../pdf-studio-extension/icons/icon32.png">
+<style>
+:root{--bg:#0e1014;--surface:#191d24;--surface2:#21262e;--border:#2a303a;--text:#e7eaf0;--muted:#9aa4b5;--accent:#4c8dff;--accent2:#6ba0ff;--ok:#22c55e;--r:18px;--font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+html[data-theme="light"]{--bg:#eef1f6;--surface:#fff;--surface2:#f2f5f9;--border:#dde2e9;--text:#14181f;--muted:#5b6a7f;--accent:#2563eb;--accent2:#1d4ed8}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--accent2);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--border)}
+.nav-in{display:flex;align-items:center;gap:12px;padding:12px 22px;max-width:1080px;margin:0 auto}
+.logo{width:34px;height:34px;border-radius:11px}
+.brand{font-weight:800;font-size:17px}.brand b{color:var(--accent)}
+.nav-links{margin-left:auto;display:flex;gap:16px;font-size:14px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:13px;background:var(--accent);color:#fff;font-weight:700;border:0;cursor:pointer;font-size:14px}
+.btn:hover{background:var(--accent2);text-decoration:none;color:#fff}
+.btn.ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.hero{text-align:center;padding:72px 22px 40px}
+.hero h1{font-size:clamp(32px,5vw,54px);line-height:1.12;margin:18px 0 12px;letter-spacing:-1px}
+.hero h1 .grad{background:linear-gradient(120deg,var(--accent),#a855f7);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.sub{font-size:18px;color:var(--muted);max-width:760px;margin:0 auto 26px}
+.badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.badge{padding:6px 13px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:12.5px;font-weight:600}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+section{padding:44px 0}
+h2.sec{font-size:28px;letter-spacing:-.5px;margin:0 0 6px;text-align:center}
+p.lead{text-align:center;color:var(--muted);max-width:760px;margin:0 auto 28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card h3{margin:0 0 6px;font-size:16px}.card p{margin:0;color:var(--muted);font-size:14px}
+.card .ico{font-size:13px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+th,td{padding:11px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{background:var(--surface2)}tr:last-child td{border-bottom:0}
+kbd{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--surface2);border:1px solid var(--border);border-bottom-width:2px;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;text-align:center}
+.step b{display:block;font-size:15px;margin:8px 0 4px}.step p{margin:0;color:var(--muted);font-size:13.5px}
+.step .n{width:34px;height:34px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+pre{background:#0a0c0f;color:#d6e2ff;border:1px solid var(--border);border-radius:14px;padding:16px;overflow-x:auto;font-size:13px;line-height:1.55}
+html[data-theme="light"] pre{background:#14181f}
+.faq details{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:10px}
+.faq summary{cursor:pointer;font-weight:700}
+footer{border-top:1px solid var(--border);padding:30px 22px;text-align:center;color:var(--muted);font-size:13.5px}
+.theme-btn{margin-left:8px;padding:8px 12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:14px;color:var(--text)}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.shot{background:var(--surface2);border:1px dashed var(--border);border-radius:var(--r);padding:34px 18px;text-align:center;color:var(--muted);font-size:13px}
+.diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;overflow-x:auto;margin-bottom:14px}
+.diagram h3{margin:0 0 8px;font-size:15px}
+.diagram pre{margin:0}
+@media(max-width:640px){.nav-links a.hide-sm{display:none}.hero{padding:48px 16px 28px}}
+</style>
+</head>
+<body>
+<header class="nav"><div class="nav-in">
+<img class="logo" src="../pdf-studio-extension/icons/logo.png" alt="Heros PDF logo" onerror="this.style.display='none'">
+<span class="brand">Heros <b>PDF</b></span>
+<nav class="nav-links">
+<a class="hide-sm" href="#features">Features</a><a class="hide-sm" href="#diagrams">Diagrams</a><a class="hide-sm" href="#install">Install</a><a class="hide-sm" href="#shortcuts">Shortcuts</a><a class="hide-sm" href="#faq">FAQ</a>
+<a class="btn" style="padding:8px 16px" href="https://github.com/Ahmedbakr78/Heros_PDF">Star</a>
+<button class="theme-btn" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'" title="Toggle theme">Theme</button>
+</nav></div></header>
+
+<div class="hero wrap">
+<div class="badges"><span class="badge">v2.3.2</span><span class="badge">100% local</span><span class="badge">Free and unlimited</span><span class="badge">Dark + Light</span><span class="badge">Mobile-ready</span><span class="badge">Manifest V3</span><span class="badge">MIT</span></div>
+<h1>The fastest, most private,<br><span class="grad">most beautiful PDF studio.</span></h1>
+<p class="sub">Read, annotate, merge, split, watermark and search — right in your browser. Silent instant boot, ultra-rounded design, 11 annotation tools, full-text search, TTS read-aloud. No account, no upload, no limits. Free forever, open source, zero emojis in the docs by policy.</p>
+<div class="cta">
+<a class="btn" href="https://github.com/Ahmedbakr78/Heros_PDF">Get Heros PDF on GitHub</a>
+<a class="btn ghost" href="#install">Install in 30 seconds</a>
+<a class="btn ghost" href="https://github.com/Ahmedbakr78/Heros_PDF/issues/new/choose">Report a bug</a>
+</div></div>
+
+<div class="wrap">
+<section id="features">
+<h2 class="sec">Everything inside</h2>
+<p class="lead">One extension. Four studios. Zero paywalls. The full printable catalogue lives in <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/FEATURES.md">docs/FEATURES.md</a>. The manual lives in <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/USER_GUIDE.md">docs/USER_GUIDE.md</a>.</p>
+<div class="grid">
+<div class="card"><div class="ico">Viewer</div><h3>Viewer that flies</h3><p>Continuous + single-page, fit-width/fit-page/800% zoom, 2-up spread, auto-scroll, remember-last-page, encrypted-PDF unlock, drag-and-drop open.</p></div>
+<div class="card"><div class="ico">Search</div><h3>Search everything</h3><p>Full-document index, 800-result cap, context snippets, case + whole-word toggles, prev/next match jumping with highlight ring.</p></div>
+<div class="card"><div class="ico">Annotate</div><h3>Annotate Studio</h3><p>11 tools — highlight, pen, arrows, shapes, text, stamps, eraser — with undo/redo, auto-save per document, burn-into-PDF export, touch drawing.</p></div>
+<div class="card"><div class="ico">Edit</div><h3>Edit Studio</h3><p>Merge, split with 1-3,5,8-10 ranges, delete, reorder, rotate, watermark, page numbers, fix page size. Unlimited, offline, MIT-ported engine.</p></div>
+<div class="card"><div class="ico">Comfort</div><h3>Eye comfort</h3><p>Dark + Light UI plus Night / Sepia / Dim page modes, focus mode, TTS read-aloud with rate control, reduced-motion support.</p></div>
+<div class="card"><div class="ico">Browser</div><h3>Browser-native</h3><p>Auto-opens file:// and https:// PDFs with separate toggles, right-click Open with Heros PDF, compact popup control center.</p></div>
+<div class="card"><div class="ico">Mobile</div><h3>Mobile-perfect</h3><p>Drawer sidebar under 900px, icon-only topbar under 640px down to 360px, touch drawing layer, floating autoscroll bar.</p></div>
+<div class="card"><div class="ico">Privacy</div><h3>Private by design</h3><p>No server, no analytics, no account. IndexedDB stores only your recents + annotations, on your device. Minimal permissions.</p></div>
+<div class="card"><div class="ico">Speed</div><h3>Engineered fast</h3><p>Lazy render + 700px preload, epoch-guarded paints, DPR capped at 2, chunked sizing, silent boot — opens 1000-page PDFs instantly.</p></div>
+</div></section>
+
+<section id="diagrams">
+<h2 class="sec">How it works</h2>
+<p class="lead">Same Mermaid diagrams as the README. Copy any block into a Markdown viewer to re-render it.</p>
+<div class="diagram"><h3>1. System overview</h3><pre>Browser
+  popup (toggles) --message--&gt; background worker --redirect--&gt; viewer tab
+  viewer --uses--&gt; vendor (pdf.js, pdf-lib, qpdf, cmaps)
+  viewer --uses--&gt; nevaipdf-ops (merge/split/rotate/watermark)
+  viewer &lt;--&gt; IndexedDB (recents + annots)
+  viewer + popup &lt;--&gt; chrome.storage.local (prefs)</pre></div>
+<div class="diagram"><h3>2. Render pipeline (epoch-guarded)</h3><pre>Open (file/drop/URL/recent)
+  -&gt; docIdFor(name+size+hash) -&gt; getDocument -&gt; metadata
+  -&gt; baseSizes (page 1 fast, rest chunked) -&gt; buildPages + observer
+  -&gt; visible? --yes--&gt; renderPage: canvas + textLayer + linkLayer
+  -&gt; highlight + annot overlay -&gt; rendered</pre></div>
+<div class="diagram"><h3>3. Privacy: nothing leaves the device</h3><pre>Your PDF --&gt; stays on device (blob: URL) --&gt; renders in page
+  --&gt; recents + annots in IndexedDB (local only)
+Your PDF - - NEVER - -&gt; Internet</pre></div>
+<p class="lead">More diagrams (folder map, lifecycle, annotation engine, search engine, edit engine, responsive breakpoints) are in the <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/README.md">README</a> and <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/architecture.md">docs/architecture.md</a>.</p>
+</section>
+
+<section id="shots">
+<h2 class="sec">How it looks</h2>
+<p class="lead">Drop screenshots into <code>docs/screenshots/</code> — <code>light.png, dark.png, sidebar.png, annotate.png, edit.png, mobile.png</code> — and they render here + in the README.</p>
+<div class="shots">
+<div class="shot">light.png<br>Light mode</div><div class="shot">dark.png<br>Dark mode</div>
+<div class="shot">sidebar.png<br>Sidebar studios</div><div class="shot">annotate.png<br>Annotate Studio</div>
+<div class="shot">edit.png<br>Edit Studio</div><div class="shot">mobile.png<br>Mobile 360px</div>
+</div></section>
+
+<section id="install">
+<h2 class="sec">Install in 30 seconds</h2>
+<p class="lead">Works on Chrome, Edge, Brave, Opera, Arc — any Chromium browser. Illustrated guide: <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/INSTALLATION.md">docs/INSTALLATION.md</a>.</p>
+<div class="steps">
+<div class="step"><span class="n">1</span><b>Clone / Download</b><p><code>git clone https://github.com/Ahmedbakr78/Heros_PDF.git</code> or Download ZIP + unzip.</p></div>
+<div class="step"><span class="n">2</span><b>Developer mode</b><p>Open <code>chrome://extensions</code> → enable <b>Developer mode</b> (top-right).</p></div>
+<div class="step"><span class="n">3</span><b>Load unpacked</b><p><b>Load unpacked</b> → select <code>Heros_PDF/pdf-studio-extension/</code> → Pin Heros PDF.</p></div>
+<div class="step"><span class="n">4</span><b>Local files</b><p>Details → enable <b>Allow access to file URLs</b> for <code>file://</code> auto-open.</p></div>
+</div>
+<br>
+<pre>git clone https://github.com/Ahmedbakr78/Heros_PDF.git
+cd Heros_PDF
+# chrome://extensions → Developer mode → Load unpacked → pdf-studio-extension/
+# Optional local preview (no install):
+cd pdf-studio-extension &amp;&amp; python3 -m http.server 8000
+# → http://localhost:8000/viewer.html</pre>
+</section>
+
+<section id="shortcuts">
+<h2 class="sec">Shortcuts</h2>
+<p class="lead">Full list is also in-app: More → Keyboard shortcuts. Full manual: USER_GUIDE.md.</p>
+<table><tr><th>Keys</th><th>Action</th><th>Keys</th><th>Action</th></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Open file</td><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>Search</td></tr>
+<tr><td><kbd>Left</kbd> <kbd>Right</kbd></td><td>Prev / next page</td><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last</td></tr>
+<tr><td><kbd>+</kbd> <kbd>-</kbd> <kbd>0</kbd></td><td>Zoom in / out / reset</td><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>Sidebar</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo annotation</td><td><kbd>F</kbd> / <kbd>R</kbd></td><td>Fit width / Rotate</td></tr>
+<tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td>Print</td><td><kbd>Esc</kbd></td><td>Close dialog</td></tr>
+<tr><td><kbd>Space</kbd></td><td>Scroll down</td><td><kbd>Shift</kbd>+<kbd>Space</kbd></td><td>Scroll up</td></tr>
+</table></section>
+
+<section id="compare">
+<h2 class="sec">Why Heros wins</h2>
+<p class="lead">Built-in viewers show pages. Web tools charge you. Heros does everything, locally, free.</p>
+<table><tr><th></th><th>Heros PDF</th><th>Chrome viewer</th><th>Typical web tool</th></tr>
+<tr><td>100% local / offline</td><td>Yes</td><td>Yes</td><td>No (uploads)</td></tr>
+<tr><td>Annotate + save (11 tools)</td><td>Yes</td><td>No</td><td>Partial / paywalled</td></tr>
+<tr><td>Merge / Split / Watermark</td><td>Yes, unlimited</td><td>No</td><td>Partial / daily quota</td></tr>
+<tr><td>Dark + Night + Sepia</td><td>Yes, 4 modes</td><td>No</td><td>No</td></tr>
+<tr><td>Full-text search + outline</td><td>Yes</td><td>Partial</td><td>Partial</td></tr>
+<tr><td>Price</td><td>Free forever</td><td>Free</td><td>Freemium</td></tr>
+<tr><td>Open source</td><td>Yes, MIT</td><td>No</td><td>No</td></tr>
+</table></section>
+
+<section id="topics">
+<h2 class="sec">Topics and About</h2>
+<p class="lead">Copy-paste source: <code>.github/GITHUB_META.md</code>. No emojis anywhere.</p>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Description</td><td><code>Heros PDF — fast, private, beautiful PDF viewer and editor. Read, annotate, merge, split, search. Dark + Light, mobile-ready, 100% local, free and unlimited.</code></td></tr>
+<tr><td>Website</td><td><code>https://ahmedbakr78.github.io/Heros_PDF/</code></td></tr>
+<tr><td>Topics (20)</td><td><code>pdf, pdf-viewer, pdf-editor, pdf-annotator, chrome-extension, edge-extension, brave, manifest-v3, pdfjs, pdf-lib, qpdf, merge-pdf, split-pdf, annotate-pdf, dark-mode, ebook-reader, offline-first, privacy, open-source, javascript</code></td></tr>
+<tr><td>Release</td><td><code>v2.3.2 — Ultra-Round Studio</code> + notes from <code>.github/RELEASE_v2.3.2.md</code> + attached zip</td></tr>
+</table></section>
+
+<section id="faq" class="faq">
+<h2 class="sec">FAQ</h2>
+<p class="lead">25 answers live in the README. The top 8:</p>
+<details open><summary>Is it really free?</summary>Yes — MIT-licensed, unlimited pages, merges and annotations, no watermark, no account.</details>
+<details><summary>Do my PDFs upload anywhere?</summary>No. Files stay on your device via blob: URLs. No analytics, no server.</details>
+<details><summary>Why won't file:// auto-open work?</summary>Enable <b>Allow access to file URLs</b> in <code>chrome://extensions → Heros PDF → Details</code>.</details>
+<details><summary>URL open says CORS error?</summary>Some hosts block cross-origin fetch. Download the file, then drag and drop it into the viewer.</details>
+<details><summary>Are annotations saved?</summary>Yes — per-document in IndexedDB, survives reload. Export burns them into the PDF.</details>
+<details><summary>Which browsers?</summary>Any Chromium (Chrome, Edge, Brave, Opera, Arc). Firefox port is on the roadmap.</details>
+<details><summary>Is todo.txt uploaded to the repo?</summary>No. It is deleted and git-ignored. Never commit private notes.</details>
+<details><summary>Are there emojis in the docs?</summary>No. Docs, website and templates are emoji-free by policy, enforced by CI.</details>
+</section>
+
+<section style="text-align:center">
+<h2 class="sec">Star it. Share it. Shape it.</h2>
+<p class="lead">Two seconds to star. Forever free because of you.</p>
+<div class="cta"><a class="btn" href="https://github.com/Ahmedbakr78/Heros_PDF/stargazers">Star on GitHub</a>
+<a class="btn ghost" href="https://github.com/Ahmedbakr78/Heros_PDF/issues/new/choose">Request a feature</a>
+<a class="btn ghost" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/CONTRIBUTING.md">Contribute</a></div>
+</section>
+</div>
+
+<footer><b>Heros PDF</b> · Free forever, private forever · MIT Copyright 2026 Ahmed Bakr ·<br>
+<a href="https://github.com/Ahmedbakr78/Heros_PDF">GitHub</a> · <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/CHANGELOG.md">Changelog</a> ·
+<a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/SECURITY.md">Security</a> · <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/USER_GUIDE.md">User guide</a> · Built on PDF.js + pdf-lib + qpdf</footer>
+</body></html>

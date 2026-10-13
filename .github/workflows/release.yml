@@ -1,0 +1,28 @@
+name: Release — attach extension zip
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build zip
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          cd pdf-studio-extension && zip -r -q "../heros-pdf-v${VER}.zip" . -x "*.DS_Store*"
+          cd .. && ls -lh heros-pdf-*.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: heros-pdf-*.zip
+          # Paste .github/RELEASE_v*.md notes when drafting, or set body_path here:
+          # body_path: .github/RELEASE_v2.3.2.md
+          generate_release_notes: true

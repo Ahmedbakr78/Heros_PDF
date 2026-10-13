@@ -1,0 +1,32 @@
+# Dependencies / build output — there are none (vanilla, no build).
+node_modules/
+dist/
+build/
+
+# Extension zips (CI builds these; don't commit)
+*.zip
+heros-pdf-*.zip
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# Test PDFs with personal data — never commit
+*.pdf
+!docs/sample.pdf
+
+# Env / secrets — the app has none; keep it that way
+.env
+.env.*
+
+# Private notes — never upload to GitHub
+todo.txt
+todo.md
+TODO.txt
+TODO.md
+todo/
+notes-private/

@@ -1,0 +1,30 @@
+name: Feature request
+description: Idea to make Heros PDF better? Pitch it here.
+title: "[feat]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What can't you do today?
+      placeholder: "When I ..., I wish I could ..."
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Your ideal solution (mockups welcome!)
+    validations: { required: true }
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Viewer, Annotate, Edit (merge/split), Search, Themes, Mobile, Performance, Docs/Website, Other]
+  - type: checkboxes
+    id: free
+    attributes:
+      label: Fit check
+      options:
+        - label: Works 100% locally (no server needed)
+        - label: Free and unlimited friendly (no paywall)
