@@ -1,0 +1,8 @@
+# Code owners — reviews are requested from these entries.
+# Replace the handles with yours if you fork this repository.
+*                @Ahmedbakr78
+
+# Keep the documentation and community files aligned across releases.
+/README.md              @Ahmedbakr78
+/docs/                  @Ahmedbakr78
+/.github/GITHUB_META.md @Ahmedbakr78

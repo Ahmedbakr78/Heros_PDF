@@ -54,6 +54,12 @@
 - [Themes and Eye Comfort](#themes-and-eye-comfort)
 - [Responsive and Mobile-First](#responsive-and-mobile-first)
 - [Performance Engineering](#performance-engineering)
+- [Design System and Visual Language](#design-system-and-visual-language)
+- [Internals — Inside app.js](#internals--inside-appjs)
+- [Release and Publishing Pipeline](#release-and-publishing-pipeline)
+- [Contribution Workflow](#contribution-workflow)
+- [Compatibility Matrix](#compatibility-matrix)
+- [Project Stats](#project-stats)
 - [Repository Structure](#repository-structure)
 - [Tech Stack](#tech-stack)
 - [Roadmap](#roadmap)
@@ -654,6 +660,196 @@ Budgets: open under 1s for a 50-page PDF on a mid laptop; zero scroll jank (only
 
 ---
 
+## Design System and Visual Language
+
+Heros PDF is built on one ultra-rounded design system. Every surface, control and
+overlay follows the same contract, so the app feels identical in every view,
+every theme and at every width.
+
+### Shell anatomy
+
+```mermaid
+flowchart TB
+    subgraph SHELL["Application shell (viewer.html)"]
+        direction TB
+        TBAR["Topbar — floating rounded card<br/>brand + open + pagebox + zoom + actions"]
+        MAIN["Main — sidebar card + viewer surface"]
+        SB["Statusbar — rounded top corners<br/>status + metrics + quick-action row"]
+        TBAR --> MAIN
+        MAIN --> SB
+        MAIN --> SIDEBAR["Sidebar card — pill tab bar<br/>8 panes"]
+        MAIN --> VIEWER["Viewer — pages + textLayer + linkLayer + annotLayer"]
+    end
+    subgraph OVERLAYS["Floating layers"]
+        direction TB
+        AN["Annotate bar (top-center, wraps on phones)"]
+        AUTO["Autoscroll pill (bottom-center)"]
+        SEL["Selection mini-bar (follows selection)"]
+        TST["Toasts (bottom-right, full-width on phones)"]
+        MENU["Dropdown menu + modal"]
+        PRG["Top progress bar"]
+    end
+    SHELL --> OVERLAYS
+
+    style TBAR fill:#2563eb,color:#fff
+    style SIDEBAR fill:#7c3aed,color:#fff
+    style VIEWER fill:#0e1014,color:#fff
+```
+
+### Design tokens
+
+| Token family | Light | Dark | Notes |
+|---|---|---|---|
+| Surfaces | `#ffffff`, `#f3f5f8`, `#e8ebf0` | `#191d24`, `#21262e`, `#2a3038` | Three levels: card, control, raised |
+| Text | `#14181f`, `#4a5568`, `#7b8697` | `#e7eaf0`, `#b0b9c6`, `#79839a` | Primary, secondary, muted |
+| Accent | `#2563eb` | `#4c8dff` | User-changeable (6 presets + custom) |
+| Radii | 20 / 14 / 11 / 7 px + 999px pill | same | Cards, buttons, small controls, pills |
+| Elevation | 3 shadow levels (sm / md / lg) | same | Page shadow uses a dedicated token |
+| Page effects | `--page-bg` white in both themes | same | Pages stay paper-white; the canvas is not themed |
+
+### Roundness contract
+
+| Component | Radius | Component | Radius |
+|---|---|---|---|
+| Topbar / sidebar / statusbar | 18–20 px | Toasts | 14 px |
+| Side tab bar | pill (999px) | Modals | 22 px |
+| Pagebox / search box | pill | Empty card / drop overlay | 26 px |
+| Thumbnails / result rows / recent rows | 11–16 px | Stat cards / tool cards | 18–20 px |
+
+Sheets of dark theme tokens and page modes live in `pdf-studio-extension/viewer.html`
+under "THEME TOKENS"; the app reads them from CSS custom properties, never from JS.
+
+---
+
+## Internals — Inside app.js
+
+One 5,274-line IIFE holds the whole engine. It is organized in numbered sections,
+so contributors can navigate by section number.
+
+```mermaid
+flowchart TB
+    subgraph APP["app.js — section map"]
+        S1["1-10 Helpers, config, DOM refs, state<br/>toast / status / progress / IDB"]
+        S2["11-17 Document load + cleanup<br/>page views + layout + navigation"]
+        S3["18-27 UI sync, zoom, rotate, outline<br/>thumbnails, search, scroll tracking"]
+        S4["28-35 Wiring: search, recent, toolbar<br/>main menu, TTS engine (dormant)"]
+        S5["36-38 Power pack: prefs, profile, stats<br/>bookmarks, markers, hub"]
+        S6["39-40 Productivity studio<br/>stopwatch, counters, tracker, todo"]
+        S7["41 Init — silent boot sequence"]
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7
+    end
+    subgraph STATE["Global state object S"]
+        ST1["doc, pageViews, baseSizes, epoch"]
+        ST2["scale, rotation, continuous, spreadOn"]
+        ST3["annots, tool, undoStack, redoStack"]
+        ST4["searchIndex, searchQuery, searchResults"]
+        ST5["prefs, profile, bookmarks, stats"]
+    end
+    APP --- STATE
+
+    style S5 fill:#16a34a,color:#fff
+    style S6 fill:#f59e0b,color:#000
+```
+
+Key invariants (enforced by CI-adjacent review):
+
+1. `renderPage` never reads `S.scale` after an `await` — it uses its snapshot.
+2. `layout()` bumps `S.epoch`; anything rendered at a stale epoch re-queues once.
+3. Annotation strokes are stored in viewport pixels and redrawn after every layout.
+4. Nothing leaves the device: no `fetch` other than the user-provided PDF URL.
+5. Every insert/remove of a control keeps mobile parity (no feature is phone-only hidden).
+
+---
+
+## Release and Publishing Pipeline
+
+```mermaid
+flowchart LR
+    DEV["branch feat/..."] --> PR["Pull Request"]
+    PR --> CI["ci.yml:<br/>files exist, manifest valid,<br/>version matches CHANGELOG,<br/>no emojis in docs"]
+    CI --> REVIEW["maintainer review<br/>+ smoke test checklist"]
+    REVIEW --> MERGE["merge to main"]
+    MERGE --> PAGES["GitHub Pages<br/>auto-deploys docs/"]
+    MERGE --> TAG["tag vX.Y.Z"]
+    TAG --> REL["release.yml:<br/>zips pdf-studio-extension/<br/>creates GitHub Release"]
+    REL --> NOTES["RELEASE_vX.Y.Z.md<br/>pasted into release notes"]
+
+    style CI fill:#16a34a,color:#fff
+    style REL fill:#2563eb,color:#fff
+```
+
+Versioning: SemVer. `patch` = fixes only, `minor` = new features, `major` = breaking
+change or manifest break. The manifest version, the CHANGELOG top entry and the
+release tag must always agree — CI fails if they do not.
+
+---
+
+## Contribution Workflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Contributor
+    participant F as Fork
+    participant CI as CI
+    participant M as Maintainer
+
+    C->>F: fork + branch feat/my-thing
+    C->>F: edit inside pdf-studio-extension/
+    C->>C: test: 1 + 50 page PDFs,<br/>dark + light, 360px width
+    C->>F: commit (feat/fix/docs/style/perf)
+    C->>M: open PR with template + screenshots
+    CI->>M: run checks (files, manifest, changelog, emojis)
+    M->>M: review + smoke test
+    alt needs work
+        M->>C: requested changes
+        C->>F: push fixes
+    else approved
+        M->>M: merge to main
+        M->>M: tag + release (when release-worthy)
+    end
+```
+
+Rules: one logical change per PR, no new permissions without an issue first, no
+frameworks or bundlers, no network calls, and never commit private files such as
+`todo.txt` (already in `.gitignore`).
+
+---
+
+## Compatibility Matrix
+
+| Platform | Status | Notes |
+|---|---|---|
+| Chrome (Chromium, MV3) | Supported | Reference target; auto-open works with file-URLs permission |
+| Microsoft Edge (MV3) | Supported | Same store rules; `edge://extensions` |
+| Brave | Supported | Shields do not block local PDF viewing |
+| Opera / Arc / Vivaldi | Supported | Any current Chromium |
+| Firefox | Roadmap (v3.0) | Needs MV2-compatible port |
+| Chrome Web Store / Edge Add-ons | Roadmap (v3.0) | Packaged release + store listing |
+| Desktop vs mobile | Both | Mobile-full since the current build (nothing hidden) |
+| Offline | Full | All engines vendored locally after install |
+
+---
+
+## Project Stats
+
+Current numbers (kept in sync by hand; small repo by design):
+
+| Metric | Value |
+|---|---|
+| Extension code | ~5,400 lines JS + ~1,750 lines HTML/CSS |
+| Edit ops engine | ~910 lines (`nevaipdf-ops.js`) |
+| Background worker | ~110 lines |
+| Documentation | 6 pages + this README (~1,400 lines) |
+| Diagrams in README | 13 (all reproducible on any Markdown viewer) |
+| Features shipped | 100+ (see `docs/FEATURES.md`) |
+| Permissions requested | 3 (`contextMenus`, `webNavigation`, `storage`) |
+| Vendored dependencies | pdf.js, pdf-lib, qpdf.wasm, cmaps |
+| Runtime dependencies | None — zero frameworks, zero build step |
+| Emojis in repo docs | 0 (enforced by CI) |
+
+---
+
 ## Repository Structure
 
 ```text
@@ -681,18 +877,26 @@ Heros_PDF/
 ├── docs/                            ← WEBSITE (GitHub Pages serves this)
 │   ├── index.html                   ← landing page (hero + features + install + FAQ)
 │   ├── architecture.md              ← deep-dive with diagrams
+│   ├── DIAGRAMS.md                  ← every diagram, one printable gallery
 │   ├── FEATURES.md                  ← printable feature catalogue
 │   ├── INSTALLATION.md              ← illustrated install guide
 │   ├── USER_GUIDE.md                ← full usage manual
+│   ├── ROADMAP.md                   ← versions, timeline, release process
+│   ├── FAQ.md                       ← long-form 30-question FAQ
 │   └── screenshots/                 ← light.png dark.png sidebar.png annotate.png edit.png mobile.png
 │
 ├── assets/
-│   └── banner.svg                   ← social / README banner source (1280x640)
+│   ├── icons/                       ← repo icon set (brand logo, 16 to 128, apple-touch)
+│   ├── banner.svg                   ← social / README banner source (1280x640)
+│   ├── generate-screenshots.py      ← regenerates docs/screenshots
+│   └── make-icon.py                 ← syncs assets/icons from the app icon set
 │
 └── .github/
     ├── GITHUB_META.md               ← copy-paste About/description/topics/website/release
     ├── RELEASE_v2.3.2.md            ← release notes for v2.3.2 (paste into GitHub Release)
+    ├── RELEASE_TEMPLATE.md          ← template for future release notes
     ├── FUNDING.yml                  ← sponsor button (edit with your links)
+    ├── CODEOWNERS                   ← review routing
     ├── PULL_REQUEST_TEMPLATE.md
     ├── ISSUE_TEMPLATE/
     │   ├── bug_report.yml
@@ -721,6 +925,8 @@ Private files that are never committed: `todo.txt`, `todo.md` (both in `.gitigno
 ---
 
 ## Roadmap
+
+Full timeline, version table and the release process: [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 - [ ] **v2.4** — Form filling + digital signature pad
 - [ ] **v2.5** — OCR for scanned PDFs (wasm, still local)
@@ -773,7 +979,7 @@ Please follow the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 24. **Is todo.txt uploaded?** No — it is deleted locally and listed in `.gitignore`, never committed.
 25. **Are there emojis in the repo docs?** No — docs, website and templates are emoji-free by policy (CI checks).
 
-More help: [`SUPPORT.md`](./SUPPORT.md). Install help: [`docs/INSTALLATION.md`](./docs/INSTALLATION.md). Manual: [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md).
+More help: [`SUPPORT.md`](./SUPPORT.md). Install help: [`docs/INSTALLATION.md`](./docs/INSTALLATION.md). Manual: [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md). Diagrams gallery: [`docs/DIAGRAMS.md`](./docs/DIAGRAMS.md). Roadmap: [`docs/ROADMAP.md`](./docs/ROADMAP.md). Long-form FAQ: [`docs/FAQ.md`](./docs/FAQ.md).
 
 ---
 

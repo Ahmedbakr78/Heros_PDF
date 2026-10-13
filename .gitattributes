@@ -1,0 +1,14 @@
+* text=auto eol=lf
+
+# Vendored binaries: never normalize, never diff
+pdf-studio-extension/vendor/pdf.min.js linguist-vendored
+pdf-studio-extension/vendor/pdf.worker.min.js linguist-vendored
+pdf-studio-extension/vendor/pdf-lib.min.js linguist-vendored
+pdf-studio-extension/vendor/qpdf.js linguist-vendored
+pdf-studio-extension/vendor/qpdf.wasm binary
+pdf-studio-extension/vendor/cmaps/*.bcmap binary
+pdf-studio-extension/icons/*.png binary
+assets/icons/*.png binary
+
+# The website is plain static files, no Jekyll plugins needed
+docs/ linguist-documentation

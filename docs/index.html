@@ -67,7 +67,7 @@ footer{border-top:1px solid var(--border);padding:30px 22px;text-align:center;co
 <img class="logo" src="../pdf-studio-extension/icons/logo.png" alt="Heros PDF logo" onerror="this.style.display='none'">
 <span class="brand">Heros <b>PDF</b></span>
 <nav class="nav-links">
-<a class="hide-sm" href="#features">Features</a><a class="hide-sm" href="#diagrams">Diagrams</a><a class="hide-sm" href="#install">Install</a><a class="hide-sm" href="#shortcuts">Shortcuts</a><a class="hide-sm" href="#faq">FAQ</a>
+<a class="hide-sm" href="#features">Features</a><a class="hide-sm" href="#diagrams">Diagrams</a><a class="hide-sm" href="#docs">Docs</a><a class="hide-sm" href="#roadmap">Roadmap</a><a class="hide-sm" href="#install">Install</a><a class="hide-sm" href="#shortcuts">Shortcuts</a><a class="hide-sm" href="#faq">FAQ</a>
 <a class="btn" style="padding:8px 16px" href="https://github.com/Ahmedbakr78/Heros_PDF">Star</a>
 <button class="theme-btn" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'" title="Toggle theme">Theme</button>
 </nav></div></header>
@@ -117,6 +117,34 @@ footer{border-top:1px solid var(--border);padding:30px 22px;text-align:center;co
   --&gt; recents + annots in IndexedDB (local only)
 Your PDF - - NEVER - -&gt; Internet</pre></div>
 <p class="lead">More diagrams (folder map, lifecycle, annotation engine, search engine, edit engine, responsive breakpoints) are in the <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/README.md">README</a> and <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/architecture.md">docs/architecture.md</a>.</p>
+</section>
+
+<section id="docs">
+<h2 class="sec">Documentation library</h2>
+<p class="lead">Six pages plus the README. Everything is plain Markdown, printable, and emoji-free by policy (CI enforces it).</p>
+<div class="grid">
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/README.md"><div class="ico">README</div><h3>Main README</h3><p>The long one: descriptions, 13 diagrams, feature universe, handbook, engineering notes, comparison tables, FAQ.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/INSTALLATION.md"><div class="ico">Install</div><h3>Installation</h3><p>From zero to reading in 30 seconds, including file-URLs permission, context menu and upgrade/uninstall.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/USER_GUIDE.md"><div class="ico">Manual</div><h3>User guide</h3><p>Every panel explained: navigation, search, annotate, edit ops, comfort modes, mobile, productivity studio.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/FEATURES.md"><div class="ico">Features</div><h3>Feature catalogue</h3><p>The complete checkable list of what ships today plus what is roadmap.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/architecture.md"><div class="ico">Deep dive</div><h3>Architecture</h3><p>State model, epoch-guarded render pipeline, coordinate spaces, storage schema, performance budget.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/DIAGRAMS.md"><div class="ico">Gallery</div><h3>Diagrams gallery</h3><p>Every Mermaid diagram in one printable page: processes, engines, storage, breakpoints, security boundary.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/ROADMAP.md"><div class="ico">Plan</div><h3>Roadmap</h3><p>Version timeline, wishlist, and exactly how each release is cut and published.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/FAQ.md"><div class="ico">FAQ</div><h3>FAQ</h3><p>Thirty questions: product, install, viewing, annotating, mobile, accessibility, security.</p></a>
+</div></section>
+
+<section id="roadmap">
+<h2 class="sec">Roadmap</h2>
+<p class="lead">Shipped, in progress and planned. Vote with a thumbs-up on the feature request to move a version up.</p>
+<table><tr><th>Version</th><th>Theme</th><th>Status</th><th>Headline</th></tr>
+<tr><td>2.0.0</td><td>Manifest V3 rewrite</td><td>Released</td><td>Service worker, dark + light, auto-open, context menu, popup</td></tr>
+<tr><td>2.3.0 – 2.3.2</td><td>Search, Edit, Ultra-round studio</td><td>Released (current)</td><td>Outline + full-text search, merge/split/rotate, design system, silent boot</td></tr>
+<tr><td>Current build</td><td>Productivity studio + mobile-full</td><td>On main</td><td>Stopwatch, counters, reading tracker, todos; no hidden controls on phones</td></tr>
+<tr><td>2.4</td><td>Forms and signatures</td><td>Planned</td><td>Acroform filling, drawn signature placement</td></tr>
+<tr><td>2.5</td><td>OCR</td><td>Planned</td><td>On-device OCR for scanned pages, searchable output</td></tr>
+<tr><td>3.0</td><td>Distribution</td><td>Planned</td><td>Web Store listing, Edge Add-ons, Firefox port</td></tr>
+</table>
+<p class="lead" style="margin-top:16px">Release process, versioning rules and the timeline diagram live in <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/ROADMAP.md">docs/ROADMAP.md</a>. Release notes template: <code>.github/RELEASE_TEMPLATE.md</code>.</p>
 </section>
 
 <section id="shots">
@@ -186,7 +214,7 @@ cd pdf-studio-extension &amp;&amp; python3 -m http.server 8000
 
 <section id="faq" class="faq">
 <h2 class="sec">FAQ</h2>
-<p class="lead">25 answers live in the README. The top 8:</p>
+<p class="lead">Thirty answers live in <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/FAQ.md">docs/FAQ.md</a>. The top 8:
 <details open><summary>Is it really free?</summary>Yes — MIT-licensed, unlimited pages, merges and annotations, no watermark, no account.</details>
 <details><summary>Do my PDFs upload anywhere?</summary>No. Files stay on your device via blob: URLs. No analytics, no server.</details>
 <details><summary>Why won't file:// auto-open work?</summary>Enable <b>Allow access to file URLs</b> in <code>chrome://extensions → Heros PDF → Details</code>.</details>
