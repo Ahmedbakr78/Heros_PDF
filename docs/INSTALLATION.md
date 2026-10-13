@@ -4,9 +4,22 @@
 
 ## Requirements
 
-- A Chromium browser: Chrome, Edge, Brave, Opera, Arc (version from the last 2 years works).
+- A Chromium browser: Chrome, Vivaldi, Yandex Browser, Edge, Brave, Opera, Arc
+  (a version from the last 2 years works).
 - The repo folder `Heros_PDF/` cloned or downloaded (about 15 MB with vendor files).
 - 1 minute of your time.
+
+## Extensions page by browser
+
+| Browser | Type in the address bar | Where Developer mode lives |
+|---|---|---|
+| Google Chrome | `chrome://extensions` | Top-right toggle |
+| Vivaldi | `vivaldi://extensions` | Top-right toggle (or Tools → Extensions) |
+| Yandex Browser | `browser://extensions` | Top-right toggle |
+| Microsoft Edge | `edge://extensions` | Left-side toggle |
+| Brave | `brave://extensions` | Top-right toggle |
+| Opera | `opera://extensions` | Top-right toggle |
+| Arc | `arc://extensions` | Top-right toggle |
 
 ## Option A — Load unpacked (full extension, recommended)
 
@@ -17,7 +30,10 @@
    ```
    Or: GitHub → Code → Download ZIP → unzip. Confirm `pdf-studio-extension/manifest.json` exists.
 
-2. **Open the extensions page.** Navigate to `chrome://extensions` (Edge: `edge://extensions`, Brave: `brave://extensions`).
+2. **Open the extensions page for your browser.** Navigate to `chrome://extensions`
+   (Chrome), `vivaldi://extensions` (Vivaldi), `browser://extensions` (Yandex Browser),
+   `edge://extensions` (Edge), `brave://extensions` (Brave), `opera://extensions` (Opera),
+   `arc://extensions` (Arc). See the table above.
 
 3. **Enable Developer mode.** Top-right toggle → ON.
 
@@ -41,14 +57,25 @@ No extensions page needed. Either:
 
 ## Enabling local file auto-open (file:// PDFs)
 
-Chrome hides `file://` navigations from extensions unless you opt in. Steps:
+Chromium hides `file://` navigations from extensions unless you opt in. Steps:
 
-1. `chrome://extensions` → Heros PDF → **Details**.
+1. Open the extensions page for your browser (table above) → Heros PDF → **Details**.
 2. Enable **Allow access to file URLs**.
 3. Open the Heros PDF popup → turn ON **Auto-open local PDFs**.
 4. Test: open any `file:///....pdf` in the browser → it should redirect into the Heros viewer.
 
-Without step 2 this silently does nothing (Chrome rule, not a bug). The viewer shows a hint pointing here.
+Without step 2 this silently does nothing (Chromium rule, not a bug). The viewer shows a hint pointing here.
+
+### Per-browser notes
+
+- **Chrome**: straightforward; pin the icon after install so the popup is one click away.
+- **Vivaldi**: identical flow to Chrome. If you use Vivaldi's own PDF viewer, disable it
+  (Settings → Web Pages → Webpage Content) so Heros PDF handles links first.
+- **Yandex Browser**: same flow. If Developer mode is greyed out, the browser is managed
+  by policy — install the portable build, or use Option B and open `viewer.html` directly.
+  In some builds the file-URLs toggle hides until you restart the browser once.
+- **Edge / Brave / Opera / Arc**: same steps; Brave may bury the file-URLs toggle under
+  Advanced on the Details page.
 
 ## Enabling web PDF auto-open (https:// PDFs)
 
@@ -67,21 +94,34 @@ After install, right-click any link or page → **Open with Heros PDF**. If the 
 ```bash
 cd Heros_PDF
 git pull
-# then chrome://extensions → Heros PDF → reload button
+# then your extensions page → Heros PDF → reload button
 ```
 
 Recents, annotations, bookmarks and prefs persist (IndexedDB + chrome.storage.local are untouched by reload).
 
 ## Uninstalling
 
-`chrome://extensions` → Heros PDF → Remove. To also wipe local data: clear the extension's IndexedDB (`pdfstudio`, `pdfstudio-annots`) and `chrome.storage.local` via DevTools → Application.
+Your extensions page → Heros PDF → Remove. To also wipe local data: clear the extension's IndexedDB (`pdfstudio`, `pdfstudio-annots`) and `chrome.storage.local` via DevTools → Application.
+
+## Making Heros PDF the default PDF viewer
+
+1. Keep **Auto-open local PDFs** and **Auto-open web PDFs** ON in the popup.
+2. Right-click any PDF link → **Open with Heros PDF** for one-off cases.
+3. Disable the browser's built-in PDF handling so Heros PDF gets the link first:
+   - Chrome/Edge: site settings → PDF documents → disable "Open PDFs in the browser"
+     (this affects inline preview; Heros PDF still opens explicit PDF links).
+   - Vivaldi: Settings → Web Pages → Webpage Content → disable the built-in viewer.
+   - Yandex Browser: parity behavior with Chrome; per-site overrides apply.
+4. To undo: turn the popup toggles off or remove the extension.
 
 ## Troubleshooting
 
 | Symptom | Cause and fix |
 |---|---|
 | "Load unpacked" says manifest missing | You selected the repo root. Select `pdf-studio-extension/` instead. |
+| Developer mode is disabled or greyed out | Managed browser (common on Yandex portable policies). Use a portable build, or Option B. |
 | file:// PDFs open in the default viewer | Enable "Allow access to file URLs" (see above) + popup toggle. |
+| Yandex: file URLs toggle missing | Restart the browser once, reopen Details; toggle appears. |
 | URL open fails with network/CORS error | Host blocks fetch. Download + drag and drop. |
 | Blank viewer, console error about worker | `vendor/pdf.worker.min.js` missing — re-clone, do not delete vendor/. |
 | Popup toggles reset on restart | A cleaner extension wipes storage. Allowlist `chrome.storage.local`. |

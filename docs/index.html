@@ -190,17 +190,24 @@ Hub -&gt; Restore     =&gt; re-import (additive, version-tolerant)</pre></div>
 
 <section id="install">
 <h2 class="sec">Install in 30 seconds</h2>
-<p class="lead">Works on Chrome, Edge, Brave, Opera, Arc — any Chromium browser. Illustrated guide: <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/INSTALLATION.md">docs/INSTALLATION.md</a>.</p>
+<p class="lead">Works in Chrome, Vivaldi, Yandex Browser, Edge, Brave, Opera and Arc — any Chromium. Illustrated guide: <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/INSTALLATION.md">docs/INSTALLATION.md</a>.</p>
 <div class="steps">
 <div class="step"><span class="n">1</span><b>Clone / Download</b><p><code>git clone https://github.com/Ahmedbakr78/Heros_PDF.git</code> or Download ZIP + unzip.</p></div>
-<div class="step"><span class="n">2</span><b>Developer mode</b><p>Open <code>chrome://extensions</code> → enable <b>Developer mode</b> (top-right).</p></div>
-<div class="step"><span class="n">3</span><b>Load unpacked</b><p><b>Load unpacked</b> → select <code>Heros_PDF/pdf-studio-extension/</code> → Pin Heros PDF.</p></div>
-<div class="step"><span class="n">4</span><b>Local files</b><p>Details → enable <b>Allow access to file URLs</b> for <code>file://</code> auto-open.</p></div>
+<div class="step"><span class="n">2</span><b>Extensions page</b><p>Chrome <code>chrome://extensions</code> · Vivaldi <code>vivaldi://extensions</code> · Yandex <code>browser://extensions</code> · Edge <code>edge://extensions</code>.</p></div>
+<div class="step"><span class="n">3</span><b>Developer mode</b><p>Turn the toggle ON (top-right), then <b>Load unpacked</b> and select <code>pdf-studio-extension/</code>.</p></div>
+<div class="step"><span class="n">4</span><b>Pin + allow files</b><p>Pin the icon, then Details → <b>Allow access to file URLs</b> so local PDFs open automatically.</p></div>
 </div>
+<table style="margin-top:14px"><tr><th>Browser</th><th>Extensions page</th><th>Notes</th></tr>
+<tr><td>Google Chrome</td><td><code>chrome://extensions</code></td><td>Reference target, everything works</td></tr>
+<tr><td>Vivaldi</td><td><code>vivaldi://extensions</code></td><td>Same flow; disable built-in viewer to prefer Heros PDF</td></tr>
+<tr><td>Yandex Browser</td><td><code>browser://extensions</code></td><td>If Developer mode is greyed out, use a portable build or open <code>viewer.html</code></td></tr>
+<tr><td>Edge / Brave / Opera / Arc</td><td><code>edge://</code>, <code>brave://</code>, <code>opera://</code>, <code>arc://extensions</code></td><td>Same steps</td></tr>
+</table>
 <br>
 <pre>git clone https://github.com/Ahmedbakr78/Heros_PDF.git
 cd Heros_PDF
-# chrome://extensions → Developer mode → Load unpacked → pdf-studio-extension/
+# your-extensions-page → Developer mode ON → Load unpacked → pdf-studio-extension/
+# Details → Allow access to file URLs  (for file:// auto-open)
 # Optional local preview (no install):
 cd pdf-studio-extension &amp;&amp; python3 -m http.server 8000
 # → http://localhost:8000/viewer.html</pre>

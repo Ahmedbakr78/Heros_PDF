@@ -725,27 +725,70 @@ within one frame even during rapid zoom/resize.
 
 ## Installation — 30 Seconds
 
-### Option A — Load unpacked (recommended for now)
+Works in Chrome, Vivaldi, Yandex Browser, Edge, Brave, Opera and Arc — any
+Chromium browser. The extension page URL differs per browser, the steps do not.
+
+### Option A — Load unpacked (full extension)
 
 ```bash
-# 1. Clone
+# 1. Get the code
 git clone https://github.com/Ahmedbakr78/Heros_PDF.git
 cd Heros_PDF
 
-# 2. Open Chrome/Edge/Brave → chrome://extensions
-# 3. Enable "Developer mode" (top-right)
-# 4. "Load unpacked" → select the folder:
+# 2. Open YOUR browser's extensions page (see table below)
+# 3. Enable Developer mode
+# 4. Load unpacked → select:
 #    Heros_PDF/pdf-studio-extension/
 # 5. Pin Heros PDF to the toolbar. Done!
 ```
 
-Step-by-step with checks:
+### Extensions page by browser
+
+| Browser | Type in the address bar | Notes |
+|---|---|---|
+| Google Chrome | `chrome://extensions` | Developer mode toggle is top-right |
+| Vivaldi | `vivaldi://extensions` | Or Tools → Extensions |
+| Yandex Browser | `browser://extensions` | Developer mode toggle is top-right |
+| Microsoft Edge | `edge://extensions` | Same controls as Chrome |
+| Brave | `brave://extensions` | Same controls as Chrome |
+| Opera | `opera://extensions` | Same controls as Chrome |
+| Arc | `arc://extensions` | Same controls as Chrome |
+
+### Step-by-step with checks
 
 1. Clone or download ZIP and unzip. Confirm `pdf-studio-extension/manifest.json` exists.
-2. Open `chrome://extensions`, enable Developer mode.
-3. Click Load unpacked, pick `pdf-studio-extension/`. The Heros PDF card appears with version 2.3.2.
-4. Click the puzzle icon → Pin Heros PDF.
-5. Click the Heros PDF icon → popup opens → click Open Heros PDF → viewer opens.
+2. Open the extensions page for your browser (table above) and enable Developer mode.
+3. Click **Load unpacked**, pick `pdf-studio-extension/`. The Heros PDF card appears with version 2.3.2.
+4. Click the puzzle/extensions icon in the toolbar → **Pin Heros PDF**.
+5. Click the Heros PDF icon → the popup opens → click **Open Heros PDF** → the viewer opens.
+6. Smoke test: drag any PDF into the window. Pages render, status bar shows page count.
+
+### Install flow by browser
+
+```mermaid
+flowchart TB
+    A["Get the code<br/>clone or unzip"] --> B{"which browser?"}
+    B -->|Chrome| C1["chrome://extensions"]
+    B -->|Vivaldi| C2["vivaldi://extensions"]
+    B -->|Yandex| C3["browser://extensions"]
+    B -->|Edge/Brave/Opera/Arc| C4["edge, brave, opera, arc<br/>://extensions"]
+    C1 --> D["Developer mode ON"]
+    C2 --> D
+    C3 --> D
+    C4 --> D
+    D --> E["Load unpacked<br/>pdf-studio-extension/"]
+    E --> F["Pin the icon"]
+    F --> G{"want file:// auto-open?"}
+    G -->|yes| H["Details → Allow access to file URLs<br/>+ popup toggle ON"]
+    G -->|no| I["drag and drop files manually"]
+    H --> J["Test: open any .pdf"]
+    I --> J
+
+    style C1 fill:#4285F4,color:#fff
+    style C2 fill:#e63946,color:#fff
+    style C3 fill:#dc2626,color:#fff
+    style J fill:#16a34a,color:#fff
+```
 
 ### Option B — Open the viewer directly (no install)
 
@@ -757,13 +800,38 @@ python3 -m http.server 8000
 # → http://localhost:8000/viewer.html
 ```
 
+### Quick browser notes
+
+- **Chrome**: everything works out of the box. Pin the icon so you can open the
+  viewer without visiting the extensions page.
+- **Vivaldi**: identical to Chrome. The popup works from the toolbar button;
+  auto-open needs the file-URLs permission enabled below.
+- **Yandex Browser**: same flow. If Developer mode seems disabled, your browser
+  may be managed by policy — install a portable Yandex build or use Option B.
+  Auto-open needs the file-URLs permission below.
+- **Edge / Brave / Opera / Arc**: same as Chrome, different extensions URL (table above).
+
 ### Enable local-file auto-open (important for `file://` PDFs)
 
-1. Go to `chrome://extensions` → **Heros PDF** → **Details**
-2. Enable **"Allow access to file URLs"**
-3. In the popup, turn on **Auto-open local PDFs**
+1. Go to the extensions page (table above) → **Heros PDF** → **Details**
+2. Enable **"Allow access to file URLs"** (Brave: it may be inside Advanced)
+3. In the Heros PDF popup, turn on **Auto-open local PDFs**
+4. Test: open any `file:///....pdf` in the browser → it opens inside Heros PDF
 
-> Without step 2, Chrome never tells extensions about `file://` navigations (Chrome security rule).
+> Without step 2, Chromium never tells extensions about `file://` navigations —
+> a browser security rule, not a bug. In Yandex Browser the toggle lives in the
+> same Details panel.
+
+### Make it the default PDF viewer
+
+- Keep **Auto-open local PDFs** and **Auto-open web PDFs** ON in the popup, so
+  every `*.pdf` navigation (file or link) is intercepted by the extension.
+- Right-click any PDF link → **Open with Heros PDF** for one-off cases.
+- Optional: disable any built-in "always open in the browser" PDF plugin so
+  Heros PDF handles links first (Chrome: site settings → PDF documents).
+- To undo: turn the popup toggles off, or remove the extension from the
+  extensions page. Your recents, annotations, bookmarks and tools stay stored
+  locally until you clear site data.
 
 Full illustrated guide: [`docs/INSTALLATION.md`](./docs/INSTALLATION.md).
 
