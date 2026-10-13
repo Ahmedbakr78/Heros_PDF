@@ -4,6 +4,10 @@ Every diagram in the project, in one printable page. Copy any block into a
 GitHub Markdown file, a Mermaid live editor, or `docs/architecture.md` to re-render.
 No emojis anywhere in this file.
 
+The README renders 22 diagrams; this gallery collects the 11 most reusable ones,
+including the open-a-PDF sequence flow. Counts and section names stay in sync
+with `README.md`.
+
 ## 1. System overview (process model)
 
 ```mermaid
@@ -138,4 +142,23 @@ flowchart TB
     E["extension page (self)"] --> CSP["script-src self + wasm-unsafe-eval"]
     E --> PERM["contextMenus, webNavigation, storage,<br/>all_urls only for .pdf detection"]
     E --> NO["no remote code, no analytics,<br/>no third-party fetches"]
+```
+
+## 11. Sequence — open a PDF
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant V as viewer + app.js
+    participant P as pdf.js worker
+    participant DB as IndexedDB
+    U->>V: drop or pick file
+    V->>V: validate .pdf, docIdFor(name+size+hash)
+    V->>P: getDocument(cMapUrl, XFA)
+    P-->>V: PDFDocumentProxy
+    V->>V: buildPages + layout + renderVisible
+    V->>DB: loadAnnots + saveRecent
+    V->>V: computeAllSizes + buildThumbnails
+    V-->>U: loaded N pages
 ```

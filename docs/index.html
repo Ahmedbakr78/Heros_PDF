@@ -67,7 +67,7 @@ footer{border-top:1px solid var(--border);padding:30px 22px;text-align:center;co
 <img class="logo" src="../pdf-studio-extension/icons/logo.png" alt="Heros PDF logo" onerror="this.style.display='none'">
 <span class="brand">Heros <b>PDF</b></span>
 <nav class="nav-links">
-<a class="hide-sm" href="#features">Features</a><a class="hide-sm" href="#diagrams">Diagrams</a><a class="hide-sm" href="#docs">Docs</a><a class="hide-sm" href="#roadmap">Roadmap</a><a class="hide-sm" href="#install">Install</a><a class="hide-sm" href="#shortcuts">Shortcuts</a><a class="hide-sm" href="#faq">FAQ</a>
+<a class="hide-sm" href="#features">Features</a><a class="hide-sm" href="#under">Under the hood</a><a class="hide-sm" href="#diagrams">Diagrams</a><a class="hide-sm" href="#docs">Docs</a><a class="hide-sm" href="#roadmap">Roadmap</a><a class="hide-sm" href="#install">Install</a><a class="hide-sm" href="#shortcuts">Shortcuts</a><a class="hide-sm" href="#faq">FAQ</a>
 <a class="btn" style="padding:8px 16px" href="https://github.com/Ahmedbakr78/Heros_PDF">Star</a>
 <button class="theme-btn" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'" title="Toggle theme">Theme</button>
 </nav></div></header>
@@ -119,16 +119,45 @@ Your PDF - - NEVER - -&gt; Internet</pre></div>
 <p class="lead">More diagrams (folder map, lifecycle, annotation engine, search engine, edit engine, responsive breakpoints) are in the <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/README.md">README</a> and <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/architecture.md">docs/architecture.md</a>.</p>
 </section>
 
+<section id="under">
+<h2 class="sec">Under the hood</h2>
+<p class="lead">Engineering notes for contributors: the resilience rules, the storage contract and the performance budget that keep it instant on 1000-page files.</p>
+<div class="diagram"><h3>Resilience — every error has a path</h3><pre>error -&gt; type
+  stale epoch        -&gt; abort + retryRender once
+  render cancelled   -&gt; treat as normal, re-queue
+  wrong password     -&gt; unlock modal re-prompts
+  CORS on URL fetch  -&gt; hint: download then drag and drop
+  file:// blocked    -&gt; hint: enable file URLs permission
+  missing vendor     -&gt; fatal banner naming the file
+  runtime error      -&gt; global handler -&gt; toast with the real message</pre></div>
+<div class="diagram"><h3>Storage and backup flow</h3><pre>open document      -&gt; recents + last page (IndexedDB)
+draw or erase mark -&gt; stroke JSON (IndexedDB, pruned to 60 docs)
+settings/profile   -&gt; prefs (localStorage)
+tools tab actions  -&gt; stopwatch / counters / tracker / todos (localStorage)
+Hub -&gt; Backup      =&gt; one JSON (format v4)
+Hub -&gt; Restore     =&gt; re-import (additive, version-tolerant)</pre></div>
+<table><tr><th>Budget</th><th>Target</th><th>Mechanism</th></tr>
+<tr><td>Open 50-page PDF</td><td>under 1s</td><td>Skeleton + progress bar, first size fast, chunked rest</td></tr>
+<tr><td>Scroll jank</td><td>Zero</td><td>Only visible pages render, 700px preload, content-visibility</td></tr>
+<tr><td>Search on 2000 pages</td><td>Responsive</td><td>Index once, cap 800 hits, list first 300</td></tr>
+<tr><td>Memory per page</td><td>1 canvas</td><td>DPR capped at 2, thumbs about 150px wide</td></tr>
+<tr><td>Boot</td><td>Instant</td><td>Boot class disables all load animations</td></tr>
+</table>
+<p class="lead" style="margin-top:16px">Deep dive: <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/architecture.md">docs/architecture.md</a> · <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/API.md">docs/API.md</a> · <a href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/TESTING.md">docs/TESTING.md</a></p>
+</section>
+
 <section id="docs">
 <h2 class="sec">Documentation library</h2>
-<p class="lead">Six pages plus the README. Everything is plain Markdown, printable, and emoji-free by policy (CI enforces it).</p>
+<p class="lead">Nine pages plus the README. Everything is plain Markdown, printable, and emoji-free by policy (CI enforces it).</p>
 <div class="grid">
-<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/README.md"><div class="ico">README</div><h3>Main README</h3><p>The long one: descriptions, 13 diagrams, feature universe, handbook, engineering notes, comparison tables, FAQ.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/README.md"><div class="ico">README</div><h3>Main README</h3><p>The long one: descriptions, 22 diagrams, sequence flows, feature universe, handbook, engineering notes, glossary, 35-question FAQ.</p></a>
 <a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/INSTALLATION.md"><div class="ico">Install</div><h3>Installation</h3><p>From zero to reading in 30 seconds, including file-URLs permission, context menu and upgrade/uninstall.</p></a>
 <a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/USER_GUIDE.md"><div class="ico">Manual</div><h3>User guide</h3><p>Every panel explained: navigation, search, annotate, edit ops, comfort modes, mobile, productivity studio.</p></a>
 <a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/FEATURES.md"><div class="ico">Features</div><h3>Feature catalogue</h3><p>The complete checkable list of what ships today plus what is roadmap.</p></a>
 <a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/architecture.md"><div class="ico">Deep dive</div><h3>Architecture</h3><p>State model, epoch-guarded render pipeline, coordinate spaces, storage schema, performance budget.</p></a>
-<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/DIAGRAMS.md"><div class="ico">Gallery</div><h3>Diagrams gallery</h3><p>Every Mermaid diagram in one printable page: processes, engines, storage, breakpoints, security boundary.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/DIAGRAMS.md"><div class="ico">Gallery</div><h3>Diagrams gallery</h3><p>Eleven Mermaid diagrams in one printable page: processes, engines, storage, breakpoints, security boundary, open flow.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/API.md"><div class="ico">API</div><h3>API reference</h3><p>NevaiOps edit functions, tools studio state and keys, viewer engine symbols, backup format v4.</p></a>
+<a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/TESTING.md"><div class="ico">Tests</div><h3>Testing guide</h3><p>The manual matrix for viewing, annotate, edit, productivity, persistence, themes and the release gate.</p></a>
 <a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/ROADMAP.md"><div class="ico">Plan</div><h3>Roadmap</h3><p>Version timeline, wishlist, and exactly how each release is cut and published.</p></a>
 <a class="card" href="https://github.com/Ahmedbakr78/Heros_PDF/blob/main/docs/FAQ.md"><div class="ico">FAQ</div><h3>FAQ</h3><p>Thirty questions: product, install, viewing, annotating, mobile, accessibility, security.</p></a>
 </div></section>

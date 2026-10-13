@@ -47,6 +47,9 @@
 - [Search Engine](#search-engine)
 - [Edit Engine (Merge / Split / Rotate / Watermark)](#edit-engine-merge--split--rotate--watermark)
 - [Privacy and Security](#privacy-and-security)
+- [Sequence Flows — End-to-End Journeys](#sequence-flows--end-to-end-journeys)
+- [Error Handling and Resilience](#error-handling-and-resilience)
+- [Accessibility](#accessibility)
 - [Installation — 30 Seconds](#installation--30-seconds)
 - [Usage Guide](#usage-guide)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
@@ -60,6 +63,7 @@
 - [Contribution Workflow](#contribution-workflow)
 - [Compatibility Matrix](#compatibility-matrix)
 - [Project Stats](#project-stats)
+- [Glossary](#glossary)
 - [Repository Structure](#repository-structure)
 - [Tech Stack](#tech-stack)
 - [Roadmap](#roadmap)
@@ -499,6 +503,224 @@ Threat model in one table:
 | Preferences | `chrome.storage.local`, your profile only | Only you |
 | Network | Nothing sent | Nobody |
 
+### Security boundary diagram
+
+```mermaid
+flowchart TB
+    subgraph PAGE["Extension page (self origin)"]
+        HTML["viewer.html"] -->|loads| SELF1["app.js (self)"]
+        HTML -->|loads| SELF2["nevaipdf-ops.js (self)"]
+        HTML -->|loads| VEN["vendor/ (self, vendored)"]
+        WASM["qpdf.wasm"] -.->|wasm-unsafe-eval only for this| VEN
+    end
+    subgraph PERM["Permissions (3 only)"]
+        P1["contextMenus — right-click open"]
+        P2["webNavigation — detect .pdf navigations"]
+        P3["storage — prefs + popup toggles"]
+        P4["host all_urls — .pdf URL detection only"]
+    end
+    PAGE -.->|never| RCE["Remote code"]
+    PAGE -.->|never| THIRD["Third-party fetches"]
+    PAGE -.->|never| TRACK["Analytics or telemetry"]
+
+    style PAGE fill:#16a34a,color:#fff
+    style RCE fill:#dc2626,color:#fff
+```
+
+### Storage and backup data flow
+
+```mermaid
+flowchart LR
+    subgraph SRC["Writers"]
+        A1["Open document"] --> R1["recents + last page"]
+        A2["Draw / erase marker"] --> R2["annotation strokes"]
+        A3["Settings / theme / profile"] --> R3["prefs"]
+        A4["Tools tab actions"] --> R4["stopwatch / counters / tracker / todos"]
+    end
+    R1 --> L[("localStorage + IndexedDB<br/>device only")]
+    R2 --> L
+    R3 --> L
+    R4 --> L
+    L -->|Hub → Backup| J["one JSON file (format v4)<br/>profile + prefs + bookmarks + stats<br/>+ tools + current marks"]
+    J -->|Hub → Restore| L
+
+    style L fill:#7c3aed,color:#fff
+    style J fill:#2563eb,color:#fff
+```
+
+---
+
+## Sequence Flows — End-to-End Journeys
+
+### Flow 1 — Open a PDF from a file (drop or picker)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant V as viewer + app.js
+    participant P as pdf.js worker
+    participant DB as IndexedDB
+
+    U->>V: drop / pick file
+    V->>V: validate .pdf, revoke old blob URL
+    V->>V: docIdFor (name + size + FNV-1a hash)
+    V->>P: getDocument(url, cMapUrl, XFA)
+    P-->>V: PDFDocumentProxy
+    V->>P: getMetadata() → title + props
+    V->>P: getPage(1) → first size fast
+    V->>V: buildPages (N page shells + observer)
+    V->>V: layout(fit-width) + renderVisible
+    V->>DB: loadAnnots(docId)
+    V->>DB: saveRecent (name, size, openedAt)
+    V->>P: computeAllSizes (chunks of 12, idle)
+    V->>P: buildThumbnails (intersection-lazy)
+    V->>V: restoreLastPage (if resume enabled)
+    V-->>U: toast "Loaded N pages", status Ready
+```
+
+### Flow 2 — Auto-open intercept (browser navigates to a PDF)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Browser
+    participant SW as background.js (SW)
+    participant V as viewer.html
+
+    B->>SW: webNavigation.onBeforeNavigate (.pdf)
+    SW->>SW: skip chrome://, extension pages,<br/>same-URL loop guard (5s)
+    SW->>SW: check prefs autoFile / autoWeb
+    SW->>B: tabs.update(viewer.html?pdf=ENCODED)
+    B->>V: open viewer with ?pdf=
+    V->>V: loadFromUrl (file: via XHR fallback)
+    Note over SW,V: onCommitted listener repeats the check<br/>as a late fallback if the worker was cold
+```
+
+### Flow 3 — Annotate a page and export
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant UI as Annotate bar
+    participant S as State S
+    participant DB as IndexedDB
+    participant PL as pdf-lib (NevaiOps)
+
+    U->>UI: pick tool + color + size + opacity
+    U->>S: pointer down on annot-layer
+    S->>S: stroke recorded in viewport px
+    loop move
+        S->>S: drawAnnots(pv) redraws overlay (DPR-capped)
+    end
+    U->>S: pointer up → commit
+    S->>S: undoStack.push, redoStack clear
+    S->>DB: saveAnnotsSoon (debounced)
+    U->>UI: Export (annotate bar or menu)
+    UI->>PL: capture each page canvas at export scale
+    PL->>PL: drawImage overlays + save()
+    PL-->>U: download annotated PDF
+```
+
+### Flow 4 — Search across a 2000-page document
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant S as Search pane
+    participant P as pdf.js worker
+    participant V as Viewer
+
+    U->>S: Ctrl+F, type query
+    S->>S: debounce 260ms
+    S->>P: ensureSearchIndex: getTextContent per page
+    P-->>S: joined text per page (chunked, progress bar)
+    S->>S: scan: case + whole-word, cap 800
+    S->>S: render first 300 snippets
+    S-->>U: "N results" in meta row
+    U->>S: Enter = next match
+    S->>V: goToPage(page, smooth)
+    V->>V: highlightInPage marks current match
+    V-->>U: page scrolled, match ringed
+```
+
+### Flow 5 — Merge two PDFs (Edit Studio)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant E as Edit Studio
+    participant PL as pdf-lib
+
+    U->>E: pick 2+ PDFs
+    E->>E: queue files, show order list
+    U->>E: Merge queued files
+    E->>PL: mergePdfs([bytesA, bytesB, ...])
+    PL->>PL: create + copyPages(all) + save()
+    PL-->>U: download merged.pdf (bytes never touch disk)
+    Note over E,PL: pure Uint8Array in → Uint8Array out
+```
+
+### Flow 6 — Tool persistence across reload
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant T as Tools studio
+    participant LS as localStorage
+
+    U->>T: Start stopwatch, add counter, toggle todo
+    T->>LS: saveTools (debounced 400ms)
+    U->>U: reload the viewer
+    T->>LS: loadTools on boot
+    alt stopwatch was running
+        T->>T: resume with elapsed + (now - startedAt)
+    end
+    T->>T: renderStopwatch + counters + tracker + todos
+    U->>T: tracker ticks while a document is visible
+```
+
+---
+
+## Error Handling and Resilience
+
+```mermaid
+flowchart TB
+    E["error or interruption"] --> T{"type"}
+    T -->|"wrong epoch"| A1["abort render, retryRender once<br/>(never paints stale zoom)"]
+    T -->|"RenderingCancelledException"| A2["treat as normal, re-queue"]
+    T -->|"password wrong"| A3["unlock modal re-prompts"]
+    T -->|"CORS on URL fetch"| A4["hint: download then drag and drop"]
+    T -->|"file:// blocked"| A5["hint: enable file URLs permission"]
+    T -->|"missing vendor file"| A6["fatal banner naming the file"]
+    T -->|"runtime error in our scripts"| A7["global handler → toast with real message"]
+    T -->|"unhandled rejection"| A8["toast, filtered for known noise"]
+    A7 --> LOG["console.warn for support tickets"]
+    A8 --> LOG
+
+    style E fill:#dc2626,color:#fff
+    style A1 fill:#16a34a,color:#fff
+```
+
+Guarantees: no silent dead buttons (every handler has a failure toast), no
+infinite retry loops, no data loss on interrupted saves (debounced writes are
+idempotent), and the epoch guard makes the viewer converge to the newest state
+within one frame even during rapid zoom/resize.
+
+---
+
+## Accessibility
+
+- Keyboard-operable end to end (full map in the shortcuts table and in-app).
+- `:focus-visible` rings on every control; logical tab order.
+- `prefers-reduced-motion` collapses all animation to near-zero.
+- Screen-reader labels on icon-only buttons (`aria-label`, `title`).
+- Contrast: text tokens tuned per theme; page content untouched for fidelity.
+- Mobile: 32px+ hit targets, touch drawing, no hover-only affordances.
+
 ---
 
 ## Installation — 30 Seconds
@@ -841,12 +1063,37 @@ Current numbers (kept in sync by hand; small repo by design):
 | Edit ops engine | ~910 lines (`nevaipdf-ops.js`) |
 | Background worker | ~110 lines |
 | Documentation | 6 pages + this README (~1,400 lines) |
-| Diagrams in README | 13 (all reproducible on any Markdown viewer) |
+| Diagrams in README | 22 (all reproducible on any Markdown viewer; gallery in `docs/DIAGRAMS.md`) |
 | Features shipped | 100+ (see `docs/FEATURES.md`) |
 | Permissions requested | 3 (`contextMenus`, `webNavigation`, `storage`) |
 | Vendored dependencies | pdf.js, pdf-lib, qpdf.wasm, cmaps |
 | Runtime dependencies | None — zero frameworks, zero build step |
 | Emojis in repo docs | 0 (enforced by CI) |
+
+---
+
+## Glossary
+
+| Term | Meaning |
+|---|---|
+| Epoch | A counter bumped by `layout()`. A render started at an older epoch aborts, so pages never show a stale zoom or rotation. |
+| Viewport (PDF.js) | Page geometry in CSS pixels after scale and rotation — the coordinate space for the canvas, text layer, link layer and annotation strokes. |
+| DPR | Device pixel ratio; the viewer caps the rendering multiplier at 2 for crisp text without unbounded memory. |
+| textLayer | The transparent, absolutely-positioned span tree that makes rendered pages selectable and highlightable. |
+| linkLayer | Invisible anchors placed over link annotations so internal and external links are clickable. |
+| annot-layer | Per-page canvas overlay that receives pointer events only in draw mode. |
+| cMap | Character mapping tables for PDFs with legacy CJK encodings, vendored in `vendor/cmaps/`. |
+| XFA | Adobe XML forms architecture; enabled at load, so forms render for viewing and printing. |
+| MV3 | Manifest V3 — the current Chrome extension platform; Heros PDF runs as a service worker. |
+| Service worker | Ephemeral background context; the viewer keeps all state, so reload persistence survives worker sleep. |
+| docId | Stable document identity: `name|size|FNV-1a hash of head+tail bytes`, deliberately excluding `lastModified`. |
+| NevaiOps | `window.NevaiOps` — the pure `Uint8Array` edit-engine namespace (vanilla port of NevaiPDF). |
+| Epoch guard + retryRender | The resilience pair that re-queues exactly one render after an interrupted one. |
+| Range syntax | `1-3,5,8-10` — 1-based, inclusive, comma and dash, used by split/extract/delete. |
+| Spread (2-up) | Two pages per row with an adjustable flex gap; the current page tracks the most-visible page. |
+| Page mode | Night, Sepia, Dim — CSS filters applied to page canvases, independent of the UI theme. |
+| Tools studio | Productivity tab: stopwatch with laps, counters, reading tracker, todos — all auto-saved locally. |
+| Backup v4 | Full-backup JSON format containing profile, prefs, bookmarks, stats, tools and current marks. |
 
 ---
 
@@ -883,6 +1130,8 @@ Heros_PDF/
 │   ├── USER_GUIDE.md                ← full usage manual
 │   ├── ROADMAP.md                   ← versions, timeline, release process
 │   ├── FAQ.md                       ← long-form 30-question FAQ
+│   ├── API.md                       ← internal API + storage keys + backup format
+│   ├── TESTING.md                   ← manual test matrix and release gate
 │   └── screenshots/                 ← light.png dark.png sidebar.png annotate.png edit.png mobile.png
 │
 ├── assets/
@@ -951,7 +1200,7 @@ Please follow the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ---
 
-## FAQ — 25 Questions
+## FAQ — 35 Questions
 
 1. **Is it really free?** Yes. MIT-licensed, unlimited, no watermark, no account.
 2. **Do my PDFs upload anywhere?** No. Everything runs locally via `blob:` URLs.
@@ -978,8 +1227,18 @@ Please follow the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 23. **What topics should the repo have?** The 20 topics in `.github/GITHUB_META.md`.
 24. **Is todo.txt uploaded?** No — it is deleted locally and listed in `.gitignore`, never committed.
 25. **Are there emojis in the repo docs?** No — docs, website and templates are emoji-free by policy (CI checks).
+26. **What happens if zoom fires while a page renders?** The epoch guard aborts the in-flight render and re-queues exactly one render, so you always converge to the newest scale.
+27. **Where do I see the debug state?** DevTools console on the viewer page; errors from our scripts also surface as toasts with the real message.
+28. **Does the stopwatch burn battery?** It is one second-interval check; the display only repaints while the Tools pane is open.
+29. **What data does the reading tracker collect?** Seconds per document and per day, stored locally. Nothing is uploaded, and Reset tools data clears it.
+30. **How do I back everything up?** Hub → Backup writes one JSON (format v4): profile, prefs, bookmarks, stats, tools and current marks. Restore re-imports it.
+31. **Can I keep using an old backup?** Yes — restore is additive and version-tolerant; unknown fields are ignored.
+32. **Why is the extension 15 MB?** Vendored engines: pdf.js + worker, pdf-lib, qpdf.wasm and the cMap tables — all local so it works offline.
+33. **Is there telemetry or crash reporting?** None. No network calls of any kind exist in the app code.
+34. **How do I report an upstream pdf.js bug?** Fixes land as vendor updates: report upstream, then link the issue here.
+35. **What licence do the docs use?** They ship with the repository under MIT, same as the code.
 
-More help: [`SUPPORT.md`](./SUPPORT.md). Install help: [`docs/INSTALLATION.md`](./docs/INSTALLATION.md). Manual: [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md). Diagrams gallery: [`docs/DIAGRAMS.md`](./docs/DIAGRAMS.md). Roadmap: [`docs/ROADMAP.md`](./docs/ROADMAP.md). Long-form FAQ: [`docs/FAQ.md`](./docs/FAQ.md).
+More help: [`SUPPORT.md`](./SUPPORT.md). Install help: [`docs/INSTALLATION.md`](./docs/INSTALLATION.md). Manual: [`docs/USER_GUIDE.md`](./docs/USER_GUIDE.md). Diagrams gallery: [`docs/DIAGRAMS.md`](./docs/DIAGRAMS.md). Roadmap: [`docs/ROADMAP.md`](./docs/ROADMAP.md). Long-form FAQ: [`docs/FAQ.md`](./docs/FAQ.md). API reference: [`docs/API.md`](./docs/API.md). Testing: [`docs/TESTING.md`](./docs/TESTING.md).
 
 ---
 
