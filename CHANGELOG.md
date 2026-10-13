@@ -11,6 +11,10 @@ All notable changes to this project are documented here. Format follows
 - Everything in Tools auto-saves locally; one-file backup/restore/reset included in full backup v4
 - Tools menu entry + T shortcut; tracker and file todos refresh on document open
 
+### Removed
+- Read-aloud sound button: speaker button, menu entry and Hub card removed
+  (page text copy/share stays); TTS engine code left dormant with no UI entry
+
 ## [2.3.2] — 2026-10-13 — Ultra-Round Studio
 
 ### Added

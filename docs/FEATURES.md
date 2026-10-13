@@ -24,7 +24,7 @@
 - [x] Rotate uniform + per-page · [x] Watermark · [x] Page numbers · [x] Fix page size · [x] Quality slider
 
 ## Comfort and Access
-- [x] Dark/Light (system-aware) · [x] Night/Sepia/Dim page modes · [x] TTS read-aloud + rate
+- [x] Dark/Light (system-aware) · [x] Night/Sepia/Dim page modes · [x] Copy-and-share page text
 - [x] Full keyboard map · [x] Reduced-motion respect · [x] Silent boot (zero boot jank)
 
 ## Browser Integration

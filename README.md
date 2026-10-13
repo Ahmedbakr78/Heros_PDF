@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/icon.png" alt="Heros PDF app icon" width="120">
+
 # Heros PDF — PDF Studio Extension
 
 ### The fastest, most private, most beautiful PDF viewer and editor for your browser.
@@ -99,7 +101,7 @@ size controls, per-document auto-save and burn-into-PDF export.
 EDIT: merge many PDFs, split and extract with 1-3,5,8-10 range syntax, delete,
 reorder, duplicate, rotate uniform or per-page, watermark, page numbers, fix page
 size, quality slider. COMFORT: dark and light UI (system-aware), night / sepia /
-dim page modes, focus mode, text-to-speech read-aloud with rate control, full
+dim page modes, focus mode, copy-and-share page text, full
 keyboard map, reduced-motion support. INTEGRATION: Manifest V3 service worker,
 auto-open of file:// and https:// PDFs with separate toggles, right-click
 "Open with Heros PDF", compact popup control center. PRIVACY: 100% local and
@@ -125,7 +127,7 @@ Heros PDF is the opposite:
 | 100 percent private | Files never leave your device. No account, no tracking, no analytics, no server. IndexedDB only stores your recents and annotations locally |
 | Free and unlimited | No page limits, no watermarks, no "3 free tasks per day", no premium lock. Merge 500 pages if you want |
 | Mobile-ready | Full responsive layout down to 400px, touch-ready annotation layer, drawer sidebar, floating autoscroll bar |
-| Power-user | Full-text search index, outline and bookmarks, thumbnails, TTS read-aloud, auto-scroll presentation, 2-up spread, custom gaps, stamps, page numbers, watermarks |
+| Power-user | Full-text search index, outline and bookmarks, thumbnails, stopwatch and todo tools, auto-scroll presentation, 2-up spread, custom gaps, stamps, page numbers, watermarks |
 
 ---
 
@@ -222,7 +224,7 @@ The printable checklist also lives in [`docs/FEATURES.md`](./docs/FEATURES.md).
 ### 5. Reading Comfort and Accessibility
 - [x] Dark / Light instant toggle (system-aware, persisted)
 - [x] Night-pages (inverted canvas), Sepia, Dim — eye-comfort page modes
-- [x] Text-to-Speech read-aloud (rate control, page-by-page)
+- [x] Copy-and-share page text (one click)
 - [x] Fully keyboard-navigable, focus-visible rings, prefers-reduced-motion respected
 - [x] Silent instant boot (boot class disables boot animations — no motion jank)
 
@@ -553,7 +555,7 @@ Full illustrated guide: [`docs/INSTALLATION.md`](./docs/INSTALLATION.md).
 | Split / extract | Sidebar Edit → Split → enter `1-3,5,8-10` → Extract |
 | Watermark | Sidebar Edit → Watermark → text + opacity → Apply and Download |
 | Page numbers | Sidebar Edit → Page numbers → position → Apply |
-| Read aloud | More menu → Read aloud → play/pause, rate slider |
+| Copy page text | Hub → Page text → Copy text (or C key menu entry) |
 | Auto-scroll | Statusbar play button → speed slider, click again to stop |
 | Change theme | Moon/sun button (instant, persisted, system-aware) |
 | Night reading | More menu → Page mode → Night / Sepia / Dim |
@@ -755,7 +757,7 @@ Please follow the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 9. **Can I merge scanned PDFs?** Yes — merge/split/rotate work on any PDF.
 10. **Mobile?** Yes — drawer sidebar, icon-only topbar, touch drawing.
 11. **Dark mode?** UI dark/light + Night/Sepia/Dim page modes.
-12. **Read aloud?** Yes — More menu → Read aloud (uses system TTS voices).
+12. **Copy page text?** Yes — Hub → Page text → Copy text, or the Tools menu entry.
 13. **Print?** Yes — prints with current rotation.
 14. **Keyboard only?** Yes — see shortcuts table above.
 15. **Offline?** Yes after install (all vendor files local).

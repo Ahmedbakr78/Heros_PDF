@@ -1,6 +1,6 @@
 # User Guide — Heros PDF v2.3.2
 
-> The full manual. Shortcuts, studios, edit ops, range syntax, themes, mobile, TTS, print.
+> The full manual. Shortcuts, studios, edit ops, range syntax, themes, mobile, productivity tools, print.
 
 ## 1. Opening files
 
@@ -74,7 +74,7 @@ Open Sidebar → Edit. All ops are pure `Uint8Array → Uint8Array` via `window.
 
 - UI theme: moon/sun button, instant, persisted, follows system when set to system.
 - Page modes: Night (invert + hue-rotate, dark pages), Sepia (warm), Dim (reduced brightness). Independent of UI theme.
-- Read aloud (TTS): More → Read aloud → page text spoken with system voices, rate slider, stop on page change.
+- Page text: Hub → Page text → Copy text or Share the current page.
 - Autoscroll: statusbar play → viewer scrolls at set speed; any manual scroll pauses; click again stops.
 - Reduced motion: `prefers-reduced-motion` collapses animations to near-zero.
 

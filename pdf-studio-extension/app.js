@@ -1884,7 +1884,6 @@ D.btnMenu.addEventListener('click', () => {
     { icon: 'i-merge', text: 'Merge PDFs…', action: () => { if (typeof startMerge === 'function') startMerge(); } },
     { icon: 'i-image', text: 'Export page as PNG', disabled: !has, action: () => { if (typeof exportPagePNG === 'function') exportPagePNG(); } },
     { icon: 'i-share', text: 'Share file', disabled: !has, action: () => { if (typeof shareFile === 'function') shareFile(); } },
-    { icon: 'i-volume', text: 'Read page aloud', disabled: !has, action: toggleSpeak },
     { icon: 'i-clock', text: 'Productivity tools (stopwatch, counters, tracker, todo)', action: () => { if (typeof openToolsPane === 'function') openToolsPane(); } },
     { icon: 'i-copy', text: 'Copy page text', kbd: 'C', disabled: !has, action: copyPageText },
     { icon: 'i-copy', text: 'Copy entire document text', disabled: !has, action: () => { if (typeof copyAllText === 'function') copyAllText(); } },
@@ -5066,7 +5065,6 @@ function wirePower() {
   on('#sbSpread', 'click', () => { toggleSpread(); syncSbBtns(); });
   on('#sbNight', 'click', () => { cyclePageMode(); syncSbBtns(); });
   on('#sbAuto', 'click', () => { toggleAuto(); syncSbBtns(); });
-  on('#sbSpeak', 'click', () => toggleSpeak());
   on('#sbPresent', 'click', () => togglePresent());
   on('#sbFull', 'click', () => toggleFullscreen());
   on('#sbTheme', 'click', () => Theme.toggle());
@@ -5156,13 +5154,6 @@ function wirePower() {
     if (S.autoTimer) toggleAuto(true);
   });
   on('#autoBarClose', 'click', () => toggleAuto(false));
-  on('#ttsRate', 'input', (e) => {
-    S.ttsRate = (parseInt(e.target.value, 10) || 10) / 10;
-    lsSet('pdfstudio-tts-v1', { rate: S.ttsRate });
-    const l = document.getElementById('ttsRateLbl');
-    if (l) l.textContent = S.ttsRate.toFixed(1) + '×';
-  });
-  on('#btnSpeak', 'click', () => toggleSpeak());
   on('#btnCopyText', 'click', () => copyPageText());
   on('#btnShare', 'click', shareFile);
   on('#swHQ', 'change', (e) => {

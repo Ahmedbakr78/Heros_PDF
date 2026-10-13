@@ -37,7 +37,8 @@ Heros PDF (PDF Studio) is a fast, private, beautiful PDF viewer and editor
 for your browser. Open any PDF instantly — continuous scroll, thumbnails, bookmarks,
 full-text search, night/sepia eye-comfort modes — then annotate with 11 tools
 (highlight, pen, shapes, text, stamps, eraser), edit with merge / split / rotate /
-watermark / page-numbers, and read aloud with TTS. Dark + Light, fully mobile-ready,
+watermark / page-numbers, plus a stopwatch, counters, a reading tracker and todos.
+Dark + Light, fully mobile-ready,
 silent instant boot with no distracting animations. 100% local and offline, no account,
 no tracking, no watermarks, no limits. Free forever, open source (MIT), powered by
 PDF.js + pdf-lib + qpdf.
@@ -54,7 +55,7 @@ recent files, per-document page bookmarks. ANNOTATE: select, highlight, underlin
 strike, pen, arrow, line, rectangle, ellipse, text boxes, stamps and eraser with
 undo/redo and per-document auto-save. EDIT: merge, split with 1-3,5,8-10 ranges,
 delete, reorder, rotate, watermark, page numbers, fix page size. COMFORT: dark and
-light UI, night / sepia / dim page modes, focus mode, read-aloud TTS. Everything
+light UI, night / sepia / dim page modes, focus mode, copy-and-share page text. Everything
 runs locally and offline. No account. No upload. No watermark. No daily quota.
 MIT licensed. Chrome, Edge, Brave and any Chromium browser.
 ```
@@ -90,7 +91,7 @@ Why these 20: they cover what users search (`pdf viewer`, `merge pdf`, `chrome e
 the stack (`pdfjs`, `pdf-lib`, `manifest-v3`), and values (`offline-first`, `privacy`, `open-source`)
 for maximum discoverability without stuffing.
 
-Optional swaps: `read-aloud`, `tts`, `watermark-pdf`, `ebook`, `study-tools`.
+Optional swaps: `productivity`, `todo`, `watermark-pdf`, `ebook`, `study-tools`.
 
 ---
 
