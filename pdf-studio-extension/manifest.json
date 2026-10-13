@@ -30,5 +30,7 @@
   ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
-  }
+  },
+  "author": "Ahmed ABOBAKR",
+  "homepage_url": "https://github.com/Ahmedbakr78/Heros_PDF"
 }

@@ -1269,7 +1269,9 @@ Enable the website in 20 seconds: **Settings → Pages → Deploy from branch �
 
 ## License and Credits
 
-**MIT** — Copyright 2026 Ahmed Bakr (Ahmedbakr78). See [`LICENSE`](./LICENSE). Do anything, just keep the notice.
+**MIT** — Copyright 2026 Ahmed ABOBAKR (Ahmedbakr78). See [`LICENSE`](./LICENSE). Do anything, just keep the notice.
+
+Maintainer: [Ahmed ABOBAKR](https://github.com/Ahmedbakr78) · [LinkedIn](https://www.linkedin.com/in/ahmed-abo-bakr-1b2466288/)
 
 Built on giants:
 
@@ -1288,6 +1290,6 @@ Built on giants:
 [![Fork](https://img.shields.io/github/forks/Ahmedbakr78/Heros_PDF?style=social)](https://github.com/Ahmedbakr78/Heros_PDF/fork)
 [![Issues](https://img.shields.io/github/issues/Ahmedbakr78/Heros_PDF?style=social)](https://github.com/Ahmedbakr78/Heros_PDF/issues)
 
-**Made with care by [Ahmed Bakr](https://github.com/Ahmedbakr78) — free forever, private forever.**
+**Made with care by Ahmed ABOBAKR ([Ahmedbakr78](https://github.com/Ahmedbakr78) · [LinkedIn](https://www.linkedin.com/in/ahmed-abo-bakr-1b2466288/)) — free forever, private forever.**
 
 </div>

@@ -12,6 +12,7 @@
 | Feature idea | [Feature request](https://github.com/Ahmedbakr78/Heros_PDF/issues/new/choose) |
 | How-do-I question | [Discussions → Q&A](https://github.com/Ahmedbakr78/Heros_PDF/discussions) |
 | Security issue | **Private** — see `SECURITY.md`, never a public issue |
+| Maintainer | Ahmed ABOBAKR — [GitHub](https://github.com/Ahmedbakr78) · [LinkedIn](https://www.linkedin.com/in/ahmed-abo-bakr-1b2466288/) |
 
 ## Bug reports that get fixed fastest include
 

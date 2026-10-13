@@ -28,7 +28,9 @@ religion, or identity. **Be kind. Be clear. Be fast.**
 3. **Permanent ban** — for severe or repeated violations.
 
 Report privately: open a draft email to the maintainer via your GitHub profile
-contact, or tag `@Ahmedbakr78` with `[CoC]` in a private discussion. All reports
+contact, tag `@Ahmedbakr78` with `[CoC]` in a private discussion, or use the
+maintainer contact: Ahmed ABOBAKR — [GitHub](https://github.com/Ahmedbakr78) ·
+[LinkedIn](https://www.linkedin.com/in/ahmed-abo-bakr-1b2466288/). All reports
 are confidential. Retaliation = immediate ban.
 
 Inspired by the [Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).

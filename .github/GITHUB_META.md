@@ -152,3 +152,18 @@ Version rules: `major.minor.patch` — patch = fixes, minor = features, major = 
 - [ ] Post the `docs/` website URL on LinkedIn / X / Reddit r/chrome_extensions with 2 screenshots
 - [ ] Enable **Discussions → Categories**: Ideas · Q and A · Show and tell
 - [ ] Add shields for stars/forks (already in README footer)
+
+---
+
+## 11. Maintainer and contact
+
+Maintainer: **Ahmed ABOBAKR** ([Ahmedbakr78](https://github.com/Ahmedbakr78))
+
+- LinkedIn: `https://www.linkedin.com/in/ahmed-abo-bakr-1b2466288/`
+- GitHub: `https://github.com/Ahmedbakr78`
+- Repo: `https://github.com/Ahmedbakr78/Heros_PDF`
+- Website: `https://ahmedbakr78.github.io/Heros_PDF/`
+
+These appear in: README author block + credits, LICENSE copyright line,
+SUPPORT.md contact table, CODE_OF_CONDUCT.md reporting instructions, and the
+website footer.
