@@ -126,7 +126,7 @@ Heros PDF is the opposite:
 | Careful design | Ultra-rounded floating cards, pill toolbars, floating sidebar, dark + light + night + sepia, icon-everywhere UI |
 | 100 percent private | Files never leave your device. No account, no tracking, no analytics, no server. IndexedDB only stores your recents and annotations locally |
 | Free and unlimited | No page limits, no watermarks, no "3 free tasks per day", no premium lock. Merge 500 pages if you want |
-| Mobile-ready | Full responsive layout down to 400px, touch-ready annotation layer, drawer sidebar, floating autoscroll bar |
+| Mobile-ready | Mobile-full layout down to 360px, touch-ready annotation layer, drawer sidebar, quick-action row |
 | Power-user | Full-text search index, outline and bookmarks, thumbnails, stopwatch and todo tools, auto-scroll presentation, 2-up spread, custom gaps, stamps, page numbers, watermarks |
 
 ---
@@ -625,13 +625,14 @@ flowchart TB
     A -->|no| D["desktop:<br/>floating sidebar + full topbar"]
     A -->|yes| B{"640px or less?"}
     B -->|no| T["tablet:<br/>sidebar = overlay drawer + backdrop"]
-    B -->|yes| M["phone:<br/>icon-only buttons, filetag hidden,<br/>pill pagebox, bottom toasts"]
+    B -->|yes| M["phone:<br/>mobile-full toolbar (nothing hidden),<br/>quick-action scroll row, compact annotate bar"]
 
     style M fill:#f59e0b,color:#000
 ```
 
-- Breakpoints: 1100px (filetag shrink) → 900px (drawer sidebar) → 640px (icon-only topbar) → 400px (page total hidden).
-- Touch: 36px+ hit targets, `touch-action: none` draw layer, momentum scrolling.
+- Breakpoints: 1100px (filetag shrink) → 900px (drawer sidebar) → 640px (mobile-full: compact wrapped toolbar, scrollable quick-action row) → 400px (page total hidden).
+- Mobile-full: zero hidden features — First/Last, zoom, Fit, Spread, Rotate, Edit, Bookmark, Night mode and all status-bar actions stay reachable as compact 32px controls.
+- Touch: 32px+ hit targets on phones, `touch-action: none` draw layer, momentum scrolling.
 - Scrollbars are hidden app-wide (still scrollable) for a clean mobile feel.
 
 ---
@@ -755,7 +756,7 @@ Please follow the [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 7. **Max file size?** Tested to 500+ MB / 2000+ pages; lazy rendering keeps it smooth.
 8. **Are annotations saved?** Yes, per-document in IndexedDB; export burns them into the PDF.
 9. **Can I merge scanned PDFs?** Yes — merge/split/rotate work on any PDF.
-10. **Mobile?** Yes — drawer sidebar, icon-only topbar, touch drawing.
+10. **Mobile?** Yes — mobile-full: drawer sidebar, every toolbar control, quick-action row, touch drawing.
 11. **Dark mode?** UI dark/light + Night/Sepia/Dim page modes.
 12. **Copy page text?** Yes — Hub → Page text → Copy text, or the Tools menu entry.
 13. **Print?** Yes — prints with current rotation.

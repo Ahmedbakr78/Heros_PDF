@@ -81,7 +81,10 @@ Open Sidebar → Edit. All ops are pure `Uint8Array → Uint8Array` via `window.
 ## 9. Mobile
 
 - Under 900px the sidebar becomes an overlay drawer with backdrop (tap outside to close).
-- Under 640px the topbar goes icon-only (labels hidden, filetag hidden), pagebox becomes a pill, toasts go full-width bottom.
+- Under 640px mobile-full kicks in: labels go icon-only but nothing is hidden —
+  First/Last, zoom, Fit, Spread, Rotate, Edit, Bookmark and Night mode wrap into
+  compact rows, and the status-bar quick actions become a scrollable row.
+  Toasts go full-width bottom.
 - Under 400px the `/ total` hides to save space.
 - Touch drawing works with `touch-action: none` on the overlay; pinch-zoom of the browser still works outside pages.
 

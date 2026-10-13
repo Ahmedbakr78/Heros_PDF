@@ -3091,7 +3091,7 @@ function initAnnotBar() {
 }
 
 /* --------------------------------------------------------------------------
-   33c. Read aloud + copy page text
+   33c. Copy page text
    -------------------------------------------------------------------------- */
 async function getPageText(n) {
   if (S.searchIndex && S.searchIndex[n - 1] != null) return S.searchIndex[n - 1];

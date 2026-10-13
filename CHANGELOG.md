@@ -11,6 +11,11 @@ All notable changes to this project are documented here. Format follows
 - Everything in Tools auto-saves locally; one-file backup/restore/reset included in full backup v4
 - Tools menu entry + T shortcut; tracker and file todos refresh on document open
 
+### Changed
+- Mobile-full: no hidden controls under 640px — First/Last, zoom, Fit, Spread,
+  Rotate, Edit, Bookmark, Night mode and all status-bar quick actions stay
+  reachable (compact rows + scrollable action row, compact annotate bar)
+
 ### Removed
 - Read-aloud sound button: speaker button, menu entry and Hub card removed
   (page text copy/share stays); TTS engine code left dormant with no UI entry
