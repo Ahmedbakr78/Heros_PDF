@@ -131,8 +131,9 @@ Heros PDF is the opposite:
 
 ## Demo / How it looks
 
-> Add your screenshots to `docs/screenshots/` and they will appear here automatically on the website too.
-> Expected files: `light.png`, `dark.png`, `sidebar.png`, `annotate.png`, `edit.png`, `mobile.png`.
+> Preview renders live in `docs/screenshots/` (regenerate with
+> `python3 assets/generate-screenshots.py`, or replace the files 1:1 with real
+> captures — same names). The website shows the same images.
 
 | Light mode | Dark mode |
 |---|---|
