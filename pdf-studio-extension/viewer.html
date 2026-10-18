@@ -1753,7 +1753,10 @@ body.spread-on .page{margin:0}
 
 <!-- ==========================================================================
      PDF.JS (bundled locally — works fully offline)
+     NOTE: external file (not inline) to comply with MV3 Content Security
+     Policy, which blocks inline scripts on extension pages.
      ========================================================================== -->
+<script src="readback-hint.js"></script>
 <script src="vendor/pdf.min.js"></script>
 <script src="vendor/pdf-lib.min.js"></script>
 <script src="vendor/qpdf.js"></script>

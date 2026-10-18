@@ -4,6 +4,49 @@
 (function () {
 'use strict';
 
+/* Global 2d-context hint (defensive copy of the viewer.html pre-vendor shim).
+   pdf.js allocates scratch canvases internally (soft-mask compose via
+   genericComposeSMask, font-load probing, text-measurement) and calls
+   getImageData on them repeatedly. Without { willReadFrequently: true }
+   Chromium logs "Multiple readback operations ..." and takes the slow
+   GPU readback path. Forcing the hint here covers every future
+   getContext('2d') — including inside the minified vendor bundle, which
+   creates its contexts directly instead of going through canvasFactory.
+   Explicit caller values are respected. */
+(function patch2dReadbackHint() {
+  function withHint(orig) {
+    return function (type, opts) {
+      if (type === '2d') {
+        if (opts == null) {
+          opts = { willReadFrequently: true };
+        } else if (typeof opts === 'object' && !('willReadFrequently' in opts)) {
+          try { opts.willReadFrequently = true; }
+          catch (e) { opts = Object.assign({}, opts, { willReadFrequently: true }); }
+        }
+      }
+      return orig.call(this, type, opts);
+    };
+  }
+  try {
+    const p = HTMLCanvasElement.prototype;
+    if (p && p.getContext && !p.getContext.__herosReadbackPatched) {
+      const patched = withHint(p.getContext);
+      patched.__herosReadbackPatched = true;
+      p.getContext = patched;
+    }
+  } catch (e) {}
+  try {
+    if (typeof OffscreenCanvas !== 'undefined' && OffscreenCanvas.prototype) {
+      const p = OffscreenCanvas.prototype;
+      if (p.getContext && !p.getContext.__herosReadbackPatched) {
+        const patched = withHint(p.getContext);
+        patched.__herosReadbackPatched = true;
+        p.getContext = patched;
+      }
+    }
+  } catch (e) {}
+})();
+
 /* --------------------------------------------------------------------------
    0. Shorthands & tiny helpers
    -------------------------------------------------------------------------- */
@@ -1105,7 +1148,7 @@ async function buildLinkLayer(pv, page, viewport) {
         link.rel = 'noopener noreferrer';
         link.title = a.url;
       } else if (a.dest) {
-        link.href = 'javascript:void(0)';
+        link.href = '#';
         link.title = 'Go to destination';
         link.addEventListener('click', e => {
           e.preventDefault();
